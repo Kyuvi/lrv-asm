@@ -1,11 +1,12 @@
 
 
 (defpackage "I-C-32-RV"
+  (:description "instructions that use both I and C risc-v modules" )
   (:use :cl :rvasm :i-32-rv :c-32-rv)
   (:shadow or and rem)
   ;; (:shadowing-import-from :cl not)
   (:export #:nop #:mv #:jr #:jc #:ret
-           #:addi #:lui #:li #:auipc #:slti #:sltiu #:xori #:ori #:andi
+           #:addi #:lui #:li #:liu #:auipc #:slti #:sltiu #:xori #:ori #:andi
            #:slli #:srli #:srai
            #:add #:sub #:sll #:slt #:sltu #:xor #:srl #:sra #:or #:and
            #:j #:jal #:jalr #:beq #:bne #:blt #:bge #:bltu #:bgeu
@@ -110,6 +111,41 @@
                                               (+ imm20 #x1000) imm20 )))
                                      ;;simulate overflow/sign extension
         ;; (addi rd rd imm12)) ;; does not work because of (immp imm12 12) test
+        ;; need to "force" it to accept #x800 as #x-800
+        ;; TODO: is it possible to add comprsessed instructions?
+        (emit-vait
+         (delay :addli (imm12)
+           (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))
+        )
+))
+
+
+(defun liu (rd imm)
+  "(liu rd imm)
+   Load Immediate Unsigned: Load unsigned immediate into rd"
+  (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) ) ;; (cregp rd))
+      (c.li rd imm)
+      (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
+            (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
+        (emit-vait
+         (let ((addr *pc*))
+           (delay :liu (imm20)
+             (cond ((not (uimmp imm20 32))
+                    (rv-error "Upper Immediate value out of range." addr))
+                   (t
+                    (build-expr-code '(20 5 7)
+                                     (bits (if (= (logand imm12 #x800) #x800)
+                                     ;; test for addi overflow/sign extension??
+                                               (+ imm20 #x1000)
+                                               imm20 )
+                                           31 12) (regno rd) #x37)
+                    )   ))))
+        ;; (lui rd
+             ;; imm20 )
+             ;; (delay :luli (imm12 imm20) (if (= (logand imm12 #x800) #x800)
+                                     ;; test for addi overflow/sign extension??
+                                              ;; (+ imm20 #x1000) imm20 )))
+                                     ;;simulate overflow/sign extension
         ;; need to "force" it to accept #x800 as #x-800
         ;; TODO: is it possible to add comprsessed instructions?
         (emit-vait
