@@ -3,7 +3,6 @@
 
 (in-package "RVASM")
 
-
         ;;;; compressed formats ;;;;
 
 ;; cr - Compressed Register
