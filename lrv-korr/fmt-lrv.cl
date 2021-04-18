@@ -245,6 +245,28 @@
     (build-expr-code '(7 5 5 3 5 7) 1 (regno rs2) (regno rs1) funct3
                                       (regno rd) funct7));)
 
+
+        ;;;; Control and Status Register formats ;;;;
+
+(defun csrreg (csr rs1 funct3 rd)
+  (let ((addr *pc*))
+    (delay :csr (csr)
+      (if (uimmp csr 12)
+          (build-expr-code '(12 5 3 5 7) csr (regno rs1) funct3 (regno rd) #x73)
+          (rv-error "csr: Wrong control and status register address" addr))
+      )))
+
+
+(defun csrimm (csr uimm5 funct3 rd)
+  (let ((addr *pc*))
+    (delay :csri (uimm5 csr)
+      (cond ((uimmp uimm5 5)
+             (rv-error "csri: Immediate value out of range." addr))
+            ((uimmp csr 12)
+             (rv-error "csri: Wrong control and status register address" addr))
+            (t (build-expr-code '(12 5 3 5 7) csr uimm5 funct3 (regno rd) #x73))
+     ))))
+
 ;
 
 ;; (defmacro define-c-immediate-type (name (param-list) &body body )
