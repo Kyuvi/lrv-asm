@@ -236,14 +236,13 @@
              (build-expr-code '(20 5 7) (bits imm32 31 12) (regno rd) op)
       ;; (rv-error "Upper immediate value out of range."))
       ;; (rv-error "Upper immediate value no good."))
-             ))
-      ) ))
+             )))))
 
         ;;;; multiply formats ;;;;
 
-(defun muldiv (rs2 rs1 funct3 rd funct7)
+(defun muldiv (rs2 rs1 funct3 rd op)
     (build-expr-code '(7 5 5 3 5 7) 1 (regno rs2) (regno rs1) funct3
-                                      (regno rd) funct7));)
+                                      (regno rd) op));)
 
 
         ;;;; Control and Status Register formats ;;;;

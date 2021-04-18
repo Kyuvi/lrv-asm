@@ -2,6 +2,7 @@
             ;;;;;;;; Multiply and divide 32-bit Risc-V instructions ;;;;;;;;
 
 (defpackage "M-32-RV"
+  (:nicknames :m32)
   (:use :cl :rvasm)
   (:export #:m.mul #:m.mulh #:m.mulhsu #:m.mulhu #:m.div #:m.divu #:m.rem #:m.remu
            ))

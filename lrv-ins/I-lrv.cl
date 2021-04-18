@@ -1,6 +1,7 @@
                     ;;;;;;;; Base 32-bit Risc-V instructions ;;;;;;;;
 
 (defpackage "I-32-RV"
+  (:nicknames :i32)
   (:use :cl :rvasm)
   (:export #:i.addi #:i.lui #:i.auipc #:i.slti #:i.sltiu
            #:i.xori #:i.ori #:i.andi #:i.slli #:i.srli #:i.srai

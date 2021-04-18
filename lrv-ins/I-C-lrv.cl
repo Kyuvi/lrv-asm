@@ -1,7 +1,9 @@
 
+                    ;;;;;;;; Base and compressed instructions  ;;;;;;;;
 
 (defpackage "I-C-32-RV"
-  (:description "instructions that use both I and C risc-v modules" )
+  (:nicknames :ic32)
+  (:description "32-bit instructions that use both I and C risc-v modules" )
   (:use :cl :rvasm :i-32-rv :c-32-rv)
   (:shadow or and rem)
   ;; (:shadowing-import-from :cl not)
@@ -15,7 +17,7 @@
             ))
 
 
-(in-package "I-C-32-RV")
+(in-package :ic32)
 
 
         ;;;; Compressed Only Instructions ;;;;

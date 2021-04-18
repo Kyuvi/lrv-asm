@@ -2,6 +2,7 @@
                     ;;;;;;;; Compressed 32-bit Risc-V instructions ;;;;;;;;
 
 (defpackage "C-32-RV"
+  (:nicknames :c32)
   (:use :cl :rvasm)
   (:export  #:c.nop
             #:c.addi #:c.li
