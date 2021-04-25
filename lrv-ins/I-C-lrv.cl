@@ -100,7 +100,7 @@
 ;; the sign extension of imm12
 (defun li (rd imm)
   "(li rd imm)
-   Load Immediate: Load immediate into rd"
+   Load Immediate: Load signed immediate into rd"
   (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) ) ;; (cregp rd))
       (c.li rd imm)
   ;; (delay :li (imm)
@@ -125,7 +125,7 @@
 (defun liu (rd imm)
   "(liu rd imm)
    Load Immediate Unsigned: Load unsigned immediate into rd"
-  (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) ) ;; (cregp rd))
+  (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) )
       (c.li rd imm)
       (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
             (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
@@ -139,22 +139,15 @@
                                      (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
                                                (+ imm20 #x1000)
+                                     ;;simulate overflow/sign extension
                                                imm20 )
                                            31 12) (regno rd) #x37)
                     )   ))))
-        ;; (lui rd
-             ;; imm20 )
-             ;; (delay :luli (imm12 imm20) (if (= (logand imm12 #x800) #x800)
-                                     ;; test for addi overflow/sign extension??
-                                              ;; (+ imm20 #x1000) imm20 )))
-                                     ;;simulate overflow/sign extension
-        ;; need to "force" it to accept #x800 as #x-800
         ;; TODO: is it possible to add comprsessed instructions?
         (emit-vait
          (delay :addli (imm12)
            (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))
-        )
-))
+        )))
 
 (defun slti (rd rs1 imm12)
   "(slti rd rs1 imm12)
