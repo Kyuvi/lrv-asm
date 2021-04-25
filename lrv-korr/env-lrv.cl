@@ -356,7 +356,7 @@
     (warn "Quoted label name ~a, probably not what you intended" label)
     `(progn (set-label ',label) ,@body)))
 
-(defmacro tejun (name &body body)
+(defmacro usoro (name &body body)
   `(progn
      (set-label ',name)
      (let ((*env* (make-instance 'local-env :parent *env*)))
