@@ -36,7 +36,7 @@
 ;; fmt-lrv.cl
             #:creg #:cimm #:ciwid #:cismal #:cload #:cstore #:cstst #:cjump
             #:cbranch #:carith #:register #:immed #:branch #:jump #:store
-            #:upperimm #:muldiv
+            #:upperimm #:muldiv #:csrimm #:csrreg
             ;; #:define-immediate-type
             ))
 

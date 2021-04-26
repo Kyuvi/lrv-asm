@@ -3,10 +3,13 @@
 
 
 (defpackage "ZICSR-RV"
+  (:documentation "Risc-V instructions for the control and status register")
   (:nicknames :csr)
   (:use :cl :rvasm)
   (:export #:csrrw #:csrrs #:csrrc
            #:csrrwi #:csrrsi #:csrrci
+           #:csrr #:csrw #:csrs #:csrc
+           #:csrwi #:csrsi #:csrci
    ))
 
 (in-package "ZICSR-RV")
