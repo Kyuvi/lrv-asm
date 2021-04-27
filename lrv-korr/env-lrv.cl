@@ -298,7 +298,7 @@
 ;; Local environmet, the base upon which to build local symbol scopes
 ;; and special-purpose environments
 
-(defclass local-env (delgate-code-vector local-symbol-table) ())
+(defclass local-env (delegate-code-vector local-symbol-table) ())
 
 
         ;;;; User interface ;;;;

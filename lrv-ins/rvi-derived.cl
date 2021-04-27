@@ -38,11 +38,11 @@
 
 (defun inc (reg)
   "increment REG by one"
-  (addi reg reg 1))
+  (i.addi reg reg 1))
 
 (defun dec (reg)
   "decrement REG by one"
-  (addi reg reg -1))
+  (i.addi reg reg -1))
 
 
         ;;;; Register only Computational instructions ;;;;
