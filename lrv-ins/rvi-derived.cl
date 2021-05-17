@@ -10,7 +10,7 @@
   (:shadow not)
   (:export #:nop4 #:seqz #:not #:neg
            #:seqz #:snez #:sltz #:sgtz
-           #:bgt #:bgtu #:ble #:bleu ;;#:beqz #:bnez
+           #:bgt #:bgtu #:ble #:bleu #:beqz #:bnez
            #:bgez #:blez #:bltz #:bgtz
            #:call #:tail
            #:inc #:dec
@@ -88,13 +88,13 @@
   (i.bgeu rs2 rs1 imm12))
 
 ;; moved out as Compressed instructions can be used
-;; (defun beqz (rs1 imm)
-;;   "Branch to address described by immediate if rs1 is equal to 0"
-;;   (i.beq rs1 'x0 imm))
+(defun beqz (rs1 imm)
+  "Branch to address described by immediate if rs1 is equal to 0"
+  (i.beq rs1 'x0 imm))
 
-;; (defun bnez (rs1 imm)
-;;   "Branch to address described by immediate if rs1 not equal to 0"
-;;   (i.bne rs1 'x0 imm))
+(defun bnez (rs1 imm)
+  "Branch to address described by immediate if rs1 not equal to 0"
+  (i.bne rs1 'x0 imm))
 
 (defun bgez (rs1 imm12)
   "Branch to address described by immediate if rs1 greater than or equal to 0"
@@ -117,41 +117,66 @@
         ;;;; Combinations ;;;;
 
 
-;; TODO: is it possible to add comprsessed instructions?
+;; TODO: is it possible to add comprsessed instructions? needs test c.jal offset 12?
 (defun call (imm)
-  "Call far away subroutine (pseudoinstruction for auipc x1 and jalr x1)"
-  (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
-        (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
-    (i.auipc 'x1
-           ;; imm20 )
-           (delay :call (imm12 imm20) (if (= (logand imm12 #x800) #x800)
-                                        ;; test for addi overflow/sign extension??
-                                        (+ imm20 #x1000) imm20 )))
-                                        ;;simulate overflow/sign extension
-    ;; (i.jalr 'x1 'x1 imm12))
+   "Call far away subroutine (pseudoinstruction for auipc x1 and jalr x1)"
+  (let* ((addr *pc*)
+         (ofst (offset imm))
+         (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+         (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+    ;; (i.auipc 'x1
+    ;;        ;; imm20 )
+    ;;        (delay :call (imm12 imm20) (if (= (logand imm12 #x800) #x800)
+    ;;                                     ;; test for addi overflow/sign extension??
+    ;;                                       (+ imm20 #x1000) imm20 )))
+    ;;                                     ;;simulate overflow/sign extension
     (emit-vait
-      (delay :addli (imm12)
-        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x1) 0 (regno 'x1) #x13)))
+     (delay :auicall (ofst imm12 imm20)
+       (if (cl:not (immp ofst 32))
+           (rv-error "call: Immediate value out of range" addr)
+           (build-expr-code '(20 5 7) (bits (if (= (logand imm12 #x800) #x800)
+                                            ;; test for addi overflow/sign extension??
+                                                (+ imm20 #x1000) imm20 ) 31 12)
+                                             ;;simulate overflow/sign extension
+                                                (regno 'x1) #x17))))
+    ;; (i.jalr 'x1 'x1 imm12))
+    ;; (if (cl:and (numberp imm12) (= imm12 0))
+    ;;     (c.jalr 'x1)
+    (emit-vait
+      (delay :jalrcall (imm12)
+        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x1) 0 (regno 'x1) #x67)))
   ))
 
-;; TODO: is it possible to add comprsessed instructions?
+;; TODO: is it possible to add comprsessed instructions? needs test
 (defun tail (imm)
   "Tail call far away subroutine
    (pseudoinstruction for  (auipc x6) and (jalr x0 x6))"
-  (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
-        (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
-    (i.auipc 'x6
-           ;; imm20 )
-           (delay :tail (imm12 imm20) (if (= (logand imm12 #x800) #x800)
-                                        ;; test for addi overflow/sign extension??
-                                        (+ imm20 #x1000) imm20 )))
-                                        ;;simulate overflow/sign extension
-    ;; (i.jalr 'x0 'x6 imm12))
+  (let* ((addr *pc*)
+         (ofst (offset imm))
+         (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+         (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+    ;; (i.auipc 'x6
+    ;;        ;; imm20 )
+    ;;        (delay :tail (imm12 imm20) (if (= (logand imm12 #x800) #x800)
+    ;;                                     ;; test for addi overflow/sign extension??
+    ;;                                     (+ imm20 #x1000) imm20 )))
+    ;;                                     ;;simulate overflow/sign extension
     (emit-vait
-      (delay :addli (imm12)
-        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x0) 0 (regno 'x6) #x13)))
+     (delay :auitail (ofst imm12 imm20)
+       (if (cl:not (immp ofst 32))
+           (rv-error "tail: Immediate value out of range" addr)
+           (build-expr-code '(20 5 7) (bits (if (= (logand imm12 #x800) #x800)
+                                            ;; test for addi overflow/sign extension??
+                                                (+ imm20 #x1000) imm20 ) 31 12)
+                                             ;;simulate overflow/sign extension
+                                                (regno 'x6) #x17))))
+    ;; (i.jalr 'x0 'x6 imm12))
+    ;; (if (cl:and (numberp imm12) (= imm12 0))
+    ;;     (c.jr 'x6)
+    (emit-vait
+      (delay :jalrtail (imm12)
+        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x6) 0 (regno 'x0) #x67)))
     )
   )
-
 
 

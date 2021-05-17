@@ -2,8 +2,8 @@
                     ;;;;;;;; Base and compressed instructions  ;;;;;;;;
 
 (defpackage "I-C-32-RV"
+  (:documentation "32-bit instructions that use both I and C risc-v modules" )
   (:nicknames :ic32)
-  (:description "32-bit instructions that use both I and C risc-v modules" )
   (:use :cl :rvasm :i-32-rv :c-32-rv)
   (:shadow or and rem)
   ;; (:shadowing-import-from :cl not)
@@ -104,13 +104,25 @@
   (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) ) ;; (cregp rd))
       (c.li rd imm)
   ;; (delay :li (imm)
-      (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
+      (let ((addr *pc*)
+            (imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
             (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
-        (lui rd
-             ;; imm20 )
-             (delay :li (imm12 imm20) (if (= (logand imm12 #x800) #x800)
+        ;; (lui rd
+        ;;      ;; imm20 )
+        ;;      (delay :li (imm12 imm20) (if (= (logand imm12 #x800) #x800)
+        ;;                              ;; test for addi overflow/sign extension??
+        ;;                                       (+ imm20 #x1000) imm20 )))
+        ;;                              ;;simulate overflow/sign extension
+        (emit-vait
+           (delay :li (imm imm12 imm20)
+              (if (cl:not (immp imm 32))
+                  (rv-error "li: Upper Immediate value out of range." addr)
+                  (build-expr-code '(20 5 7)
+                                   (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
-                                              (+ imm20 #x1000) imm20 )))
+                                             (+ imm20 #x1000) imm20 )
+                                             ;;simulate overflow/sign extension
+                                           31 12) (regno rd) #x37))))
                                      ;;simulate overflow/sign extension
         ;; (addi rd rd imm12)) ;; does not work because of (immp imm12 12) test
         ;; need to "force" it to accept #x800 as #x-800
@@ -125,29 +137,26 @@
 (defun liu (rd imm)
   "(liu rd imm)
    Load Immediate Unsigned: Load unsigned immediate into rd"
-  (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) )
-      (c.li rd imm)
-      (let ((imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
+  ;; (if (cl:and (integerp imm) (immp imm 6) (not (zerop imm)) ) ;; (cregp rd))
+  ;;     (c.li rd imm)
+      (let ((addr *pc*)
+            (imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
             (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
         (emit-vait
-         (let ((addr *pc*))
-           (delay :liu (imm20)
-             (cond ((not (uimmp imm20 32))
-                    (rv-error "Upper Immediate value out of range." addr))
-                   (t
-                    (build-expr-code '(20 5 7)
-                                     (bits (if (= (logand imm12 #x800) #x800)
+           (delay :liu (imm imm12 imm20)
+              (if (cl:not (uimmp imm 32))
+                  (rv-error "liu: Upper Immediate value out of range." addr)
+                  (build-expr-code '(20 5 7)
+                                   (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
-                                               (+ imm20 #x1000)
-                                     ;;simulate overflow/sign extension
-                                               imm20 )
-                                           31 12) (regno rd) #x37)
-                    )   ))))
+                                             (+ imm20 #x1000) imm20 )
+                                             ;;simulate overflow/sign extension
+                                           31 12) (regno rd) #x37))))
         ;; TODO: is it possible to add comprsessed instructions?
         (emit-vait
-         (delay :addli (imm12)
-           (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))
-        )))
+         (delay :addliu (imm12)
+           (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))))
+;;)
 
 (defun slti (rd rs1 imm12)
   "(slti rd rs1 imm12)
@@ -302,9 +311,9 @@
   "(j (imm)
    Jump to address described by immediate"
   (let ((ofst (offset imm)))
-    (if (cl:and (integerp imm) (immp ofst 21) (zerop (logand ofst 1)))
+    (if (cl:and (integerp imm) (immp ofst 12) (zerop (logand ofst 1)))
         (c.j imm)
-        (i.jal x0 imm))
+        (i.jal 'x0 imm))
   ))
 
 (defun jal (rd imm)
@@ -314,10 +323,10 @@
    The sign extended immediate (a multiple of 2) and the current address
    of the jump instruction."
   (let ((ofst (offset imm)))
-    (cond ((cl:and (integerp imm) (immp ofst 21) (zerop (logand ofst 1))
+    (cond ((cl:and (integerp imm) (immp ofst 12) (zerop (logand ofst 1))
                    (zerop (regno rd)))
            (c.j imm))
-          ((cl:and (integerp imm) (immp ofst 21) (zerop (logand ofst 1))
+          ((cl:and (integerp imm) (immp ofst 12) (zerop (logand ofst 1))
                    (= (regno rd) 1))
            (c.jal imm))
           (t (i.jal rd imm)))
@@ -492,7 +501,7 @@
    this address."
   (cond ((cl:and (integerp imm12) (zerop (logand imm12 #xff83)) ;(immp imm12 7)
                  (cregp rs) (cregp rb))
-         (c.sv rs1 rs2 imm12))
+         (c.sv rs rb imm12))
         ((cl:and (integerp imm12) (zerop (logand imm12 #xff03)) ; (immp imm12 8) (zerop (lognand imm12 #x3))
                  ;; (cregp rs)
                  (= (regno rb) 2))
