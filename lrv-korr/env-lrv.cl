@@ -229,6 +229,7 @@
   (with-slots (symbol-table) env
     (setf (gethash symbol symbol-table) address)))
 
+;; TODO make env-address accept delayed pc? also delayed labels?
 (defmethod env-emit ((env code-vector) bytes)
   (when (> (+ (env-address env) (length bytes)) *max-address*)
     (warn "Content emit of $~x bytes at $~x will overflow address space"

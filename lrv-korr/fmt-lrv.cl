@@ -175,6 +175,8 @@
               (t
              ;; (if (iummp imm12 12)
       ;; (let ((ofst (ofstset imm12)))
+             ;; (if (immp imm12 12)
+      ;; (let ((ofst (offset imm12)))
                (build-expr-code '(1 6 5 5 3 4 1 7)
                                 (bits ofst 12) (bits ofst 10 5) (regno rs2)
                                 (regno rs1) funct3 (bits ofst 4 1) (bits ofst 11) op)
@@ -234,6 +236,7 @@
   ;; (if (cl:and (immp imm32 32) (zerop (logand imm #xfff)))
             (t
              (build-expr-code '(20 5 7) (bits imm32 31 12) (regno rd) op)
+            (t (build-expr-code '(20 5 7) (bits imm32 31 12) (regno rd) op)
       ;; (rv-error "Upper immediate value out of range."))
       ;; (rv-error "Upper immediate value no good."))
              )))))
