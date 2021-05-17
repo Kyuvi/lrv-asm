@@ -31,7 +31,7 @@
             #:*env* #:*origin* #:*max-address*
             #:emit #:emit-byte #:emit-jait #:emit-vait #:emit-zait
             #:advance-to #:align #:label #:set-label #:label-difference
-            #:with-label #:proc
+            #:with-label #:usoro
 
 ;; fmt-lrv.cl
             #:creg #:cimm #:ciwid #:cismal #:cload #:cstore #:cstst #:cjump
@@ -40,6 +40,14 @@
             ;; #:define-immediate-type
             ))
 
+
+;; (defpackage "RVASM-UTILS"
+;;   (:documentation "Procedures that expand on the basic rvasm package")
+;;   (:nicknames :rvutl)
+;;   (:use :cl :rvasm)
+;;   (:export
+
+;;    ))
 
 
 (in-package "RVASM")

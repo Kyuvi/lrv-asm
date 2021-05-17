@@ -293,7 +293,7 @@
       (emit-jait (carith 4 0 3 rd 2 rs2))
       (rv-error "c.or: Invalid compressed register, (use x8..x15)."))
   )
-        ;;;; Jumsp and branches ;;;;
+        ;;;; Jumps and branches ;;;;
 
 
 ;; c.j - Jump (pc-relative)  (jal  x0 offset)
@@ -336,7 +336,7 @@
   "(c.jalr rs1)
    Compressed jump and link register(call): Jump to address contained in register
    and write address following the jump (pc+2) to x1 (link register).
-   (jalr x1 r1 0), rs1 ≠ 0."
+   (jalr x1 rs1 0), rs1 ≠ 0."
   (if (not (zerop (regno rs1)))
       (emit-jait (build-expr-code '(3 1 5 5 2) 4 1 (regno rs1) 0 2))
       (rv-error "c.jalr: can not use x0 as source register."))

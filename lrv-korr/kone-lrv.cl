@@ -121,12 +121,14 @@
   (<= (- (ash 1 (1- b)))
       x
       (1- (ash 1 (1- b)))))
+ ;; (typep x '(signed-byte b))
  ;; (= (integer-length x) b))
 
 (defun uimmp (x b)
   "Test that x can fit into b bits (unsigned)"
   ;; (<= 0 x (1- (ash 1 (1+ b))))
   (<= 0 x (1- (ash 1  b)))
+ ;; (typep x '(unsigned-byte b))
   )
 
 ; Extract bitfield read bit number a of x (a starts from zero)

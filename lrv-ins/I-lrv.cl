@@ -44,7 +44,7 @@
 (defun i.auipc (rd imm32)
   "(i.auipc rd imm32)
    Add Upper Immediate to PC: Add the immediate
-   (which should be a multiple of 4096 or #x1000) the program counter
+   (which should be a multiple of 4096 or #x1000) to the program counter
    and load the result into the register."
   (emit-vait (upperimm imm32 rd #x17))
 
