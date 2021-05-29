@@ -52,7 +52,7 @@
   (i.sub rd 'x0 rs))
 
 (defun seqz (rd rs)
- "Set rd to one if rs is not equal to zero"
+ "Set rd to one if rs is equal to zero"
   (i.sltiu rd rs 1))
 
 (defun snez (rd rs)
@@ -60,11 +60,11 @@
   (i.sltu rd 'x0 rs))
 
 (defun sltz (rd rs)
- "Set rd to one if rs is not equal to zero"
+ "Set rd to one if rs is less than zero"
   (i.slt rd rs 'x0))
 
 (defun sgtz (rd rs)
- "Set rd to one if rs is not equal to zero"
+ "Set rd to one if rs is greater than zero"
   (i.slt rd 'x0 rs))
 
         ;;;; Jumps and branches ;;;;
