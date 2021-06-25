@@ -134,6 +134,8 @@
 ; Extract bitfield read bit number a of x (a starts from zero)
 ; or read from bits a to b of x (if b>a then performs (bit x max b))
 (defun bits (x a &optional b)
+  "Extract bitfield number a from x or read bits b to a of x
+   (if b > a performs '(bits max b)')"
   ;; (if b (ldb (byte (- a b) b) x)
   ;;       (ldb (byte 1 a) x )))
   (if b
@@ -152,3 +154,33 @@
         ;; (label labl)
         )
     (delay :offset (labl) (- labl addr ))))
+
+
+        ;;;; miscellenous utilites ;;;;
+(defun lnot-imm (x imm)
+  "Get the 'imm' bits of the logical not of a number 'x'"
+  (bits (lognot x) (- imm 1) 0))
+
+(defun lnotb (x)
+  "logical not byte
+   The lSB byte value of the logical not of 'x'"
+  ;; (bits (lognot x) 8 0))
+  (lnot-imm x 8))
+
+(defun lnotj (x)
+  "logical not jyte
+   The lSB jyte value of the logical not of 'x'"
+  ;; (bits (lognot x) 16 0))
+  (lnot-imm x 16))
+
+(defun lnotv (x)
+  "logical not vyte
+   The lSB vyte value of the logical not of 'x'"
+  ;; (bits (lognot x) 32 0))
+  (lnot-imm x 32))
+
+(defun lnotz (x)
+  "logical not zyte
+   The lSB zyte value of the logical not of 'x'"
+  ;; (bits (lognot x) 64 0))
+  (lnot-imm x 64))

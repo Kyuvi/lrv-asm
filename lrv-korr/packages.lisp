@@ -10,6 +10,7 @@
             #:zero #:ra #:sp #:gp #:tp #:s0 #:fp #:s1
             #:*pc* #:x16 #:x32 #:regno #:cregp #:cregno #:rv-error
             #:build-expr-code #:build-expr-code* #:immp #:uimmp #:bits #:offset
+            #:lnot-imm #:lnotb #:lnotj #:lnotv #:lnotz
 
 ;; env-lrv.cl
             #:code-vector #:symbol-table
