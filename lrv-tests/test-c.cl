@@ -1,13 +1,13 @@
 
-(load "../lrvasm-korr/packages.lisp")
-(load "../lrvasm-korr/env-lrv.cl")
-(load "../lrvasm-korr/fmt-lrv.cl")
-(load "../lrvasm-korr/kone-lrv.cl")
+(load "../lrv-korr/packages.lisp")
+(load "../lrv-korr/env-lrv.cl")
+(load "../lrv-korr/fmt-lrv.cl")
+(load "../lrv-korr/kone-lrv.cl")
 
-(load "../lrvasm-korr/test-rvasm.cl")
+(load "./test-rvasm.cl")
 
-(load "~/.eclrc")
-(load "./C-32-lrv.cl")
+;; (load "~/.eclrc")
+(load "../lrv-ins/C-lrv.cl")
 
 (defpackage "TEST-C-32"
   (:documentation "Test functions for the risc-v 32 bit compressed instructions")

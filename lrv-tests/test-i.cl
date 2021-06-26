@@ -1,13 +1,13 @@
 
-(load "../lrvasm-korr/packages.lisp")
-(load "../lrvasm-korr/env-lrv.cl")
-(load "../lrvasm-korr/fmt-lrv.cl")
-(load "../lrvasm-korr/kone-lrv.cl")
+(load "../lrv-korr/packages.lisp")
+(load "../lrv-korr/env-lrv.cl")
+(load "../lrv-korr/fmt-lrv.cl")
+(load "../lrv-korr/kone-lrv.cl")
 
-(load "../lrvasm-korr/test-rvasm.cl")
+(load "./test-rvasm.cl")
 
-(load "~/.eclrc")
-(load "./I-lrv.cl")
+;; (load "~/.eclrc")
+(load "../lrv-ins/I-lrv.cl")
 
 (defpackage "TEST-I-32"
   (:documentation "Test functions for the risc-v 32 bit base instructions")
@@ -437,7 +437,7 @@
     (x0  x31 x31  #b00000001111111111111000000110011)
     (x31 x31 x31  #b00000001111111111111111110110011)))
 
-  )
+
 
 ;; (do-vait-test   I.FENCE
 ;;    ((x0 x0 x0   #b00000000000000000000000000001111)
@@ -455,7 +455,7 @@
 ;;    ((x0 x0 #b000000000001   #b00000000000100000000000001110011)))
    ((#b00000000000100000000000001110011)))
 
-
+)
 ;; (defun test-addi ()
 ;;    (progn (set-env)
 ;;           (i.addi x0 x0 0)
