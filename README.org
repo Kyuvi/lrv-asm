@@ -1,0 +1,106 @@
+#+TITLE: (Common) Lisp RISC-V assembler (lrv-asm)
+
+* Description
+A crude but functional implementation of a dynamic [[https://en.wikipedia.org/wiki/Riscv][RISC-V]] assembler in common-lisp, written and tested in Embeddable Common Lisp and output code has only been created for and tested on the [[https://github.com/theandrew168/bronzebeard/blob/master/bronzebeard/asm.py][Longan nano development board]]. I have tried to make it portable but I have not tested it on other Common Lisp implementations.
+
+It currently supports only the 32-bit IM modules plus the base instructions from the C module and the CSR module including the (proposed?) 32-bit csr memory map, but has been designed to be extended to support other modules and both 64-bit and 128-bit instruction sets as well.
+
+These are actually the basic modules/packages to be used to build up an instruction set for a chip when needed.
+
+It is not optimized for using compressed instructions, and when using the "I-C-32-RV" module, unless compressed instructions are explicitly used will only use the compressed instructions for backward branches as it only uses compressed instructions for resolved immediates if possible.
+
+* Syntax and Notation
+** Assembly Related
+It includes some changes to the standard assembly notation and syntax namely....
+byte - 8-bit   (byte)
+jait - 16-bit  (half word)
+vait - 32-bit  (word)
+zait - 64-bit  (double word)
+yait - 128-bit (quad word)
+
+Though I will probably use Double and Quad for the floating point module names as the module letters are derived from that.
+
+also sv/lv (store vait/load vait) are of the form
+sv rs rb imm
+lv rd rb imm
+as are all the other loads and stores (sb,lb, sj/lj, sz/lz).
+
+I might also refer to Egypt and Indus expressions instead of Big and Little Endian respectively because Egyptian notation was left to right (like Latin script) and Indus notation was right to left (like Arabic script). So RISC-V uses Indus expressions.
+
+I personally find it easier to think like this about (modern) assembly code.
+
+** Common Lisp Related
+I shadowed "and" "or" "not" (in the I-C-32-lrv module) and will probably shadow "rem"  in future (at the moment it is m.rem if used directly from the multiplication module) so one can either change the names when importing them or use cl:and cl:or etc in code.
+
+While in Common Lisp the notation =+constant+= is sometimes used for constants, I just added a phi symbol to the end to represent constants i.e. =constantΦ=, it turns out there are a lot of constants in the RISC-V ISA (see ./lrv-ins/csr-lrv.cl).
+
+* Installation and Use
+Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF. so the files need to be loaded into a lisp environment in order and a now package made using the right modules to target a particular chip.
+
+(a simple example targeting the longan development board from a file in the top level)
+-----
+
+(in-package cl-user)
+
+(load ./lrv-korr/packages.lisp)
+(load ./lrv-korr/env-lrv.cl)
+(load ./lrv-korr/kone-lrv)
+(load ./lrv-korr/fmt-lrv.cl)
+(load ./lrv-korr/files-lrv.cl)
+
+(load ./lrv-ins/I-lrv.cl)
+(load ./lrv-ins/C-lrv.cl)
+(load ./lrv-ins/I-C-lrv.cl)
+(load ./lrv-ins/rvi-derived.cl)
+(load ./lrv-ins/M-lrv.cl)
+(load ./lrv-ins/csr-lrv.cl)
+
+
+(defpackage "LONGAN"
+  (:use :cl :rvasm :c32 :i32 :i-c32 :rdv :m32 :zicsr :csr32)
+  (shadowing-import-from :i-c32 and or beqz bnez ) ;; beqz & bnez defined in rvdrv also.
+  (shadowing-import-from :rdv not )
+# ;; (shadowing-import-from :m32 rem ))
+
+(in-package :longan)
+
+;; =code start here=
+
+-----
+
+This can be used as the actual assembler
+
+* Plans and Goals
+** Goals
+- Simple clear code to show the expressiveness of (common) lisp.
+- Modular code to mirror the modularity of the RISC-V instruction set Architecture.
+- Concise and fast machine code output.
+- Modularity.
+- Remaining instruction modules.
+- 64-bit.
+- Automate building an assembler for a chip from specified modules
+
+** Long term Goals
+- 128-bit.
+- Asdf build system and quicklisp (after design stabilization).
+
+** Non Goals
+- Speed of assembly/compiling process.
+- Targeting Multiple Instruction Set Architectures (though the lrv-korr could be used for this).
+ 
+* TODO
+- [ ] Optimize compiler (lrv-env.cl) for optional compressed instruction set automatically (and clearly).
+- [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or seperate file.
+- [ ] Include all finalized RISC-V modules.
+- [ ] Include 64-bit instruction set in modules.
+- [ ] Include 128-bit instruction set in modules.
+- [ ] Automate building an assembler for a chip from specified modules.
+
+* Acknowledgments
+This assembler is based on both
+Andy Hefner's [[https://github.com/ahefner/asm6502][asm-6502]], https://ahefner.livejournal.com/20528.html.
+Technoblogy's [[https://github.com/technoblogy/lisp-riscv-assembler][RISC-V assembler]], http://www.ulisp.com/show?310Z.
+
+Also thanks to
+[[https://github.com/dkochmanski][Daniel Kochmanski]].
+Andrew Dailey's [[https://github.com/theandrew168/bronzebeard][Bronzebeard project]].
