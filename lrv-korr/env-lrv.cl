@@ -11,7 +11,7 @@
                 :reader env-code-vector
                 :initform (make-array 0 :adjustable t :fill-pointer t))
    (address :initarg :address :accessor env-address :initform 0))
-  (:documentation "code-vector class with a code-vector slot containg a vector
+  (:documentation "Code-vector class with a code-vector slot containg a vector
    of bytes and an address slot which holds the byte address of the last vector")
   )
 
@@ -69,6 +69,11 @@
 ;;then set the state of the resolvable condition,error or signal the condition
 ;;and return the promise
 (defmethod force ((p promise) &optional (error-p t))
+" Returns the promise-value of the 'promise' if it exists,
+  or sets the promise-value of the promise to the result of executing
+  the promise-fun of the promise. if not, executing promise-fun
+  returns a resolvable condition, then set the state of the
+  resolvable condition, error or signal the condition and return the promise"
   (if (not (eq (promise-value p) *lazy-marker*))
       (promise-value p)
       (handler-case (set-promise-value p (funcall (promise-fun p)))
@@ -88,6 +93,7 @@
 
 ;; Builds an anonymous function/procedure from the dependencies and body
 (defmacro forcing (dependencies &body body)
+"Builds an anonymous function/procedure from the dependencies and body"
   (let ((bindings (mapcar #'parse-binding dependencies)))
     `((lambda ,(mapcar #'first bindings) ,@body)
       ,@(loop for b in bindings collect `(force ,(second b))))))
@@ -95,6 +101,8 @@
 ;; Creates a new promise and using "force" either resolves the promise instantly
 ;; or returns the new promise
 (defmacro delay (name dependencies &body body)
+ "Creates a new promise and using 'force' either resolves the promise instantly
+  or returns the new promise"
   `(force
     (make-promise :name ,name :fun (lambda () (forcing ,dependencies ,@body)))
     nil))
@@ -123,26 +131,34 @@
   ;; (:method (n (val promise)) (delay :bait (n val) (get-byte n val))))
 
 (defun test-byte (x)
-  (delay :test-byte (x) (etypecase x ((integer 0 255) x))))
+  ;; (delay :test-byte (x) (etypecase x ((integer 0 255) x))))
+  (delay :test-byte (x) (etypecase x ((unsigned-byte 8) x))))
 
 (defun test-jait (x)
-  (delay :test-jait (x) (etypecase x ((integer 0 65535) x))))
+  ;; (delay :test-jait (x) (etypecase x ((integer 0 65535) x))))
+  (delay :test-jait (x) (etypecase x ((unsigned-byte 16) x))))
 
 (defun test-vait (x)
-  (delay :test-vait (x) (etypecase x ((integer 0 #xffffffff) x))))
+  ;; (delay :test-vait (x) (etypecase x ((integer 0 #xffffffff) x))))
+  (delay :test-vait (x) (etypecase x ((unsigned-byte 32) x))))
 
 (defun test-zait (x)
-  (delay :test-zait (x) (etypecase x ((integer 0 #xffffffffffffffff) x))))
+  ;; (delay :test-zait (x) (etypecase x ((integer 0 #xffffffffffffffff) x))))
+  (delay :test-zait (x) (etypecase x ((unsigned-byte 64) x))))
 
 (defun test-yait (x)
-  (delay :test-yait (x)
-         (etypecase x ((integer 0 #xffffffffffffffffffffffffffffffff) x))))
+  ;; (delay :test-yait (x)
+         ;; (etypecase x ((integer 0 #xffffffffffffffffffffffffffffffff) x))))
+  (delay :test-yait (x) (etypecase x ((unsigned-byte 128) x))))
 
-(defun do-encode (name obj num test)
+(defun do-encode (name obj num  test)
   "Build 'num' (+ 1) byte vector of encoded 'obj'
    using name for delay name and test to test fit"
   (coerce (loop for i upto num collect
                                (delay name (obj) (get-byte i (funcall test obj))))
+        ;; test needs to be inside delay to ensure testing number
+  ;; (coerce (loop for i upto num collect
+                               ;; (delay name (obj) (get-byte i obj)))
           'vector))
   ;; (dotimes (x num)
     ;; (delay name (obj) (get-byte x (test obj)) )))
@@ -176,7 +192,8 @@
   ;; (do-encode (name zait 7 test-zait))))
   ;;
 (defun encode-yait (yait &optional (name "yait"))
-  (do-encode name yait 15 #'test-yait))
+  ;; (check-type yait (unsigned-byte 128))
+  (do-encode name yait 15  #'test-yait))
   ;; (coerce (loop for i upto 15 collect
   ;;                             (delay name (yait) (get-byte i (test-yait yait))))
   ;;         'vector))
@@ -334,6 +351,8 @@
 ;; Within an assembly environment, either returns the label position
 ;; or a promise with the same name as the label
 (defun label (name &key (offset 0) (env *env*))
+  "Within an  assembly environment, either returns the label position
+  or a promise with the same name as the label"
   (assert (not (null env)))
   (delay name (offset)
          (+ offset (cl::or (env-find-label env name)
