@@ -18,38 +18,42 @@
 
 (defun csrrw (rd rs1 csr)
   "(csrrw rd rs1 csr)
-   Reads contents of csr (zero extended) into rd and writes contents of rs1 to the csr"
+   Reads contents of csr (zero extended) into rd and writes contents of rs1 to the csr.
+   If rd = x0 does not read and only writes to csr."
   (emit-vait (csrreg csr rs1 1 rd)))
 
 (defun csrrs (rd rs1 csr)
   "(csrrs rd rs1 csr)
    Reads contents of csr (zero extended) into rd and sets the bits in the csr
-   that are set in rs1"
+   that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 2 rd)))
 
 (defun csrrc (rd rs1 csr)
   "(csrrc rd rs1 csr)
    Reads contents of csr (zero extended) into rd and clears the bits in the csr
-   that are set in rs1"
+   that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 3 rd)))
 
         ;;;; immediate instructions ;;;;
 
 (defun csrrwi (rd uimm5 csr)
   "(csrrwi rd uimm5 csr)
-   Reads contents of csr into rd and writes zero extended immediate 'uimm5' to the csr"
+   Reads contents of csr into rd and writes zero extended immediate 'uimm5' to the csr.
+   If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 5 rd)))
 
 (defun csrrsi (rd uimm5 csr)
   "(csrrsi rd uimm5 csr)
    Reads contents of csr (zero extended) into rd and sets the bits in the csr
-   that are set in the immediate 'uimm5'"
+   that are set in the immediate 'uimm5'.
+   If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 6 rd)))
 
 (defun csrrci (rd uimm5 csr)
   "(csrrci rd uimm5 csr)
    Reads contents of csr (zero extended) into rd and clears the bits in the csr
-   that are set in the immediate 'uimm5'"
+   that are set in the immediate 'uimm5'.
+   If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 7 rd)))
 
         ;;;; derived register instructions ;;;;
