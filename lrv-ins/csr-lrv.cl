@@ -195,6 +195,7 @@
            ;; #:miobase-csrΦ #:csr-mtvtΦ #:csr-mnxtiΦ #:csr-mtvt2Φ #:csr-jalmnxtiΦ
            ;; #:csr-pushmcauseΦ #:csr-pushmepcΦ #:csr-pushmsubmΦ #:csr-wfeΦ #:csr-sleepvalueΦ
            ;; #:csr-txevtΦ #:csr-mcountinhibitΦ #:csr-mmisc-ctlΦ #:csr-mnvecΦ #:csr-msubmΦ
+
            ;; csr-utility functions
            #:rdtime #:rdtimeh #:read-time
    ))
@@ -550,12 +551,13 @@
 (defun rdtimeh (reg)
   (csrr reg timeh-csrΦ))
 
-(defun read-time (reg1 reg2)
+(defun read-time (reg1 reg2 &optional (reg3 t1))
   "Read the 64-bit time from the time csr 'csr-time'
    leaving the results in reg1 and reg2"
-  (set-label 'time-read-label)
-  (rdtimeh reg1)
-  (rdtime reg2)
-  (rdtimeh 't0)
-  (bne reg1 't0 'time-read-label)
-  )
+  (let ((read-time-label (gensym "READ-TIME-")))
+    (set-label read-time-label)
+    (rdtimeh reg1)
+    (rdtime reg2)
+    (rdtimeh reg3)
+    (bne reg1 reg3 read-time-label)
+  ))
