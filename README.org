@@ -25,8 +25,6 @@ sv rs rb imm
 lv rd rb imm
 as are all the other loads and stores (sb,lb, sj/lj, sz/lz).
 
-I might also refer to Egypt and Indus expressions instead of Big and Little Endian respectively because Egyptian notation was left to right (like Latin script) and Indus notation was right to left (like Arabic script). So RISC-V uses Indus expressions.
-
 I personally find it easier to think like this about (modern) assembly code.
 
 ** Common Lisp Related
@@ -64,7 +62,7 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 
 (in-package :longan)
 
-;; =code start here=
+;; =code starts here=
 
 -----
 
@@ -72,11 +70,11 @@ This can be used as the actual assembler
 
 * Plans and Goals
 ** Goals
-- Simple clear code to show the expressiveness of (common) lisp.
+- Simple clear code using the expressiveness of (common) lisp.
 - Modular code to mirror the modularity of the RISC-V instruction set Architecture.
 - Concise and fast machine code output.
 - Modularity.
-- Remaining instruction modules.
+- Remaining finalized instruction modules.
 - 64-bit.
 - Automate building an assembler for a chip from specified modules
 
@@ -93,8 +91,8 @@ This can be used as the actual assembler
 - [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or seperate file.
 - [ ] Include all finalized RISC-V modules.
 - [ ] Include 64-bit instruction set in modules.
-- [ ] Include 128-bit instruction set in modules.
 - [ ] Automate building an assembler for a chip from specified modules.
+- [ ] Include 128-bit instruction set in modules.
 
 * Acknowledgments
 This assembler is based on both
