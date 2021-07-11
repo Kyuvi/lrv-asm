@@ -53,13 +53,13 @@
 
 ;; c.addi4spn - add immediate to stack pointer (addi rd x2 value)
 ;; value ≠ 0 // rd = x8..x15
-(defun c.addi4spn (rd imm10)
+(defun c.addi4spn (crd imm10)
   "(c.addi4spn rd imm10)
    c.addi4spn: Load rd with the sum of the stack pointer(x2) and the 10-bit
    immediate, which should be a multiple of 4 that is zero extended to register
    width. (addi rd x2 imm) rd = x8..x15, imm ≠ 0."
   (let ((addr *pc*))
-    (if (cregp rd)
+    (if (cregp crd)
         (emit-jait
          (delay :c.addi4spn (imm10)
            (cond ((zerop imm10) ;(= imm10 0)
@@ -71,7 +71,7 @@
                  (t
                   (build-expr-code '(3 2 4 1 1 3 2)
                                    0 (bits imm10 5 4) (bits imm10 9 6)
-                                       (bits imm10 2) (bits imm10 3) (cregno rd)
+                                       (bits imm10 2) (bits imm10 3) (cregno crd)
                                    0)
                   ))))
         (rv-error "c.addi4spn: Invalid compressed register (use x8..x15)." addr))
@@ -151,19 +151,19 @@
 
 ;; c.andi - logical AND (immediate) (andi rd rd value)
 ;; //   rd  = x8 ... x15     ?? imm6 ≠ 0 ??
-(defun c.andi (rd imm6)
+(defun c.andi (crd imm6)
   "(c.andi rd imm6)
    AND value in rd and the immediate (sign extended to register size) and write
    result to rd. (andi rd rd imm6) rd = x8..x15."
   (let ((addr *pc*))
-   (if (cregp rd)
+   (if (cregp crd)
        (emit-jait ;; (cismal imm6 rd 4 2 1)
         (delay :c.andi (imm6)
           (cond ((not (immp imm6 6))
                  (rv-error "c.andi: Immediate value out of range." addr))
                 (t
                   (build-expr-code '(3 1 2 3 5 2)
-                                             4 (bits imm6 5) 2 (cregno rd)
+                                             4 (bits imm6 5) 2 (cregno crd)
                                                (bits imm6 4 0) 1))
 
                  )
@@ -175,36 +175,36 @@
 
 ;; c.srli - shift right logical (immediate) (srli rd rd value)
 ;; // rd = x8 ... x15 value = 1 .. 31  check summary
-(defun c.srli (rd imm5)
+(defun c.srli (crd imm5)
   "(c.srli rd imm5)
    Compressed Shift right logical immediate: Shift contents of register right
    by immediate value and store result in rd.
    (srli rd rd imm), rd = x8..x15, imm = 1 .. 31."
   (let ((addr *pc*))
-    (cond ((not (cregp rd))
+    (cond ((not (cregp crd))
            (rv-error "c.srli: Invalid compressed register, (use x8..x15)." addr))
           ((not (<= 1 imm5 31))
            (rv-error "c.srli: Immediate should be between 1 and 31." addr))
           (t
-           (emit-jait (build-expr-code '(4 2 3 5 2) 8 0 (cregno rd) imm5 1))
+           (emit-jait (build-expr-code '(4 2 3 5 2) 8 0 (cregno crd) imm5 1))
            )
           )
   ))
 
 ;; c.srai - shift right arithmetic (Immediate) (srai rd rd value)
 ;; // rd = x8 ... x15 value = 1 .. 31  check summarY
-(defun c.srai (rd imm5)
+(defun c.srai (crd imm5)
   "(c.srai rd imm5)
    Compressed Shift right aritmetic immediate: Shift contents of register right
    by immediate value, keeping the sign bit and store result in rd.
    (srai rd rd imm), rd = x8..x15, imm = 1 .. 31."
   (let ((addr *pc*))
-    (cond ((not (cregp rd))
+    (cond ((not (cregp crd))
            (rv-error "c.srai: Invalid compressed register, (use x8..x15)." addr))
           ((not (<= 1 imm5 31))
            (rv-error "c.srai: Immediate should be between 1 and 31." addr))
           (t
-           (emit-jait (build-expr-code '(4 2 3 5 2) 8 1 (cregno rd) imm5 1))
+           (emit-jait (build-expr-code '(4 2 3 5 2) 8 1 (cregno crd) imm5 1))
            )
           )))
 
@@ -252,45 +252,45 @@
 
 ;; c.and - AND register to register (and rd rd rs2),
 ;; //     rd r2 = x8..x15
-(defun c.and (rd rs2)
+(defun c.and (crd crs2)
   "(c.and rd rs2)
    AND rd and reg2 and store result in rd.
    (and rd rd rs2) rd/reg2 = x8..x15."
-  (if (cl:and (cregp rd) (cregp rs2))
-      (emit-jait (carith 4 0 3 rd 3 rs2))
+  (if (cl:and (cregp crd) (cregp crs2))
+      (emit-jait (carith 4 0 3 crd 3 crs2))
       (rv-error "c.and: Invalid compressed register, (use x8..x15)."))
   )
 
 ;; c.sub - subtract register 2 from destination register (sub rd rd rs2),
 ;; //     rd r2 = x8 ... x15
-(defun c.sub (rd rs2)
+(defun c.sub (crd crs2)
   "(c.sub rd rs2)
    Subtract reg2 from rd and store result in rd (sub rd rd rs2).
    rd/reg2  = x8..x15."
-  (if (cl:and (cregp rd) (cregp rs2))
-      (emit-jait (carith 4 0 3 rd 0 rs2))
+  (if (cl:and (cregp crd) (cregp crs2))
+      (emit-jait (carith 4 0 3 crd 0 crs2))
       (rv-error "c.sub: Invalid compressed register, (use x8..x15)."))
   )
 
 ;; c.xor - xor register with register (xor rd rd rs2),
 ;; //     rd r2 = x8 ... x15
-(defun c.xor (rd rs2)
+(defun c.xor (crd crs2)
   "(c.xor rd rs2)
    XOR rd and reg2 and store result in rd.
    (xor rd rd rs2) rd/reg2  = x8..x15."
-  (if (cl:and (cregp rd) (cregp rs2))
-      (emit-jait (carith 4 0 3 rd 1 rs2))
+  (if (cl:and (cregp crd) (cregp crs2))
+      (emit-jait (carith 4 0 3 crd 1 crs2))
       (rv-error "c.xor: Invalid compressed register, (use x8..x15)."))
   )
 
 ;; c.or - OR register to register (or rd rd rs2),
 ;; //     rd r2 = x8 ... x15
-(defun c.or (rd rs2)
+(defun c.or (crd crs2)
   "(c.or rd rs2)
    OR rd and reg2 and store result in rd (or rd rd rs2).
    rd/reg2  = x8..x15."
-  (if (cl:and (cregp rd) (cregp rs2))
-      (emit-jait (carith 4 0 3 rd 2 rs2))
+  (if (cl:and (cregp crd) (cregp crs2))
+      (emit-jait (carith 4 0 3 crd 2 crs2))
       (rv-error "c.or: Invalid compressed register, (use x8..x15)."))
   )
         ;;;; Jumps and branches ;;;;
@@ -343,35 +343,35 @@
   )
 
 ;; c.beqz - branch if (reg ) equal to zero (beq r1 x0 offset)
-(defun c.beqz (rs1 imm)
+(defun c.beqz (crs1 imm)
   "(c.beqz rs1 imm)
    Branch to target address described by immediate if rs1 is equal to zero.
    (beq rs1 x0 imm), range = ±256B."
-  (if (cregp rs1)
-      (emit-jait (cbranch imm rs1 6 1))
+  (if (cregp crs1)
+      (emit-jait (cbranch imm crs1 6 1))
       (rv-error "c.beqz: Invalid compressed register, (use x8..x15)."))
   )
 
 ;; c.bnez  - branch if (reg ) not equal to zero (bne r1 x0 offset)
-(defun c.bnez (rs1 imm)
+(defun c.bnez (crs1 imm)
   "(c.bnez rs1 imm)
    Branch to target address described by immediate if rs1 is not equal to zero.
    (bne rs1 x0 imm), range = ±256B."
-  (if (cregp rs1)
-      (emit-jait (cbranch imm rs1 7 1))
+  (if (cregp crs1)
+      (emit-jait (cbranch imm crs1 7 1))
       (rv-error "c.bnez: Invalid compressed register, (use x8..x15)."))
   )
 
         ;;;; Loads and stores ;;;;
 
 ;; c.lv - load vyte (lv rd r1 offset) //    rd & r1 = x8 ... x15
-(defun c.lv (rd rs1 imm7)
+(defun c.lv (crd crs1 imm7)
   "(c.lv rd rs1 imm7)
    Compressed load vait: Load rd with the 32bit value from memory location derived
    from adding rsi to the 7-bit immediate a multiple of 4 zero extended to the
    register width. (lv rd rs1 imm7) rd/r1 = x8..x15."
   (let ((addr *pc*))
-    (if (cl:and (cregp rd) (cregp rs1))
+    (if (cl:and (cregp crd) (cregp crs1))
         (emit-jait
    ;; (cimm imm8 rd 4 4)
          (delay :c.lv (imm7)
@@ -380,9 +380,9 @@
                  ((not (zerop (logand imm7 #x3)))
                   (rv-error "c.lv: Immediate should be a multiple of 4." addr))
                  (t
-                  (build-expr-code '(3 3 3 1 1 3 2) 2 (bits imm7 5 3) (cregno rs1)
+                  (build-expr-code '(3 3 3 1 1 3 2) 2 (bits imm7 5 3) (cregno crs1)
                                                       (bits imm7 2) (bits imm7 6)
-                                                      (cregno rd) 0)
+                                                      (cregno crd) 0)
                   )
                  )
            )
@@ -393,13 +393,13 @@
 
 ;; c.sv - store vyte (sw rs2 rs1 offset)
 ;;    r1 & r2 = x8 ... x15
-(defun c.sv (rs rb imm7)
+(defun c.sv (crs crb imm7)
   "(c.sv rs rb imm7)
    Compressed store vait: Stores 32 bit value in rs to memory location derived
    from adding rb to 7-bit immediate, a multiple of 4 zero extended to regsiter
    width. (sv rs rb imm7) rd/r1 = x8..x15."
    (let ((addr *pc*))
-    (if (cl:and (cregp rs) (cregp rb))
+    (if (cl:and (cregp crs) (cregp crb))
         (emit-jait
          (delay :c.sv (imm7)
            (cond ((not (uimmp imm7 7)) ;; Note: uimmp!!
@@ -407,9 +407,9 @@
                  ((not (zerop (logand imm7 #x3)))
                   (rv-error "c.sv: Immediate should be a multiple of 4." addr))
                  (t
-                  (build-expr-code '(3 3 3 1 1 3 2) 6 (bits imm7 5 3) (cregno rb)
+                  (build-expr-code '(3 3 3 1 1 3 2) 6 (bits imm7 5 3) (cregno crb)
                                                       (bits imm7 2) (bits imm7 6)
-                                                      (cregno rs) 0)
+                                                      (cregno crs) 0)
                   )
                  )
            )
@@ -481,6 +481,14 @@
 
         ;;;; Floating point instructions ;;;;
 
+        ;;;; single floating point ;;;;
+
+  ;; (c.flv       #b0110000000000000  #x6000  2  cl (frd rs1 imm6)) ;f //flv frd offset(rs1)
+  ;; (c.fsv       #b1110000000000000  #xe000  2  cs (fr2 rs2 imm7))  ;f //fsv frs2 offset(rs1)
+  ;; (c.flvsp     #b0110000000000010  #x6002  2  ci (frd imm6)) ;f //flv frd offset(x2)
+  ;; (c.fsvsp     #b1110000000000010  #xe002  2  css (fr2 imm6)) ;f //fsv fr2 offset(x2)
+  ;;
+
   ;; (c.flv       #b0110000000000000  #x6000  2  cl (frd rs1 imm6)) ;f //flv frd offset(rs1)
 ;; (c.flz       #b0010000000000000  #x2000  2  cl (frd rs1 imm6)) ;d //flz frd offset(rs1)
   ;; (c.fsv       #b1110000000000000  #xe000  2  cs (fr2 rs2 imm7))  ;f //fsv frs2 offset(rs1)
@@ -501,7 +509,7 @@
 ;; (defun teq (prd imm)
 ;;   (if (equal prd imm) (print "w") (print "n")))
 
-(defpackage "C-64-RV"
+(defpackage "C-64-I-RV"
   (:use :cl :rvasm :c-32-rv)
   (:shadow  #:c.srli #:c.srai #:c.slli )
   (:export  #:c.nop
@@ -520,7 +528,7 @@
             #:c.lz #:c.sz #:c.addiv #:c.lzsp #:c.szsp
             ))
 
-(in-package "C-64-RV")
+(in-package "C-64-I-RV")
 
 (defun c.lz ( )
   ""
@@ -561,3 +569,9 @@
   ""
 
 )
+
+        ;;;; double floating point ;;;;
+;; (c.flz       #b0010000000000000  #x2000  2  cl (frd rs1 imm6)) ;d //flz frd offset(rs1)
+  ;; (c.fsz       #b1010000000000000  #xa000  2  cl (fr2 rs2 imm7))  ;d //fsz frs2 offset(rs1)
+  ;; (c.flzsp     #b0010000000000010  #x2002  2  ci (frd imm6)) ;d //fld frd offset(x2)
+  ;; (c.fszsp     #b1010000000000010  #xa002  2  css (fr2 imm6)) ;d //fsd fr2 offset(x2)

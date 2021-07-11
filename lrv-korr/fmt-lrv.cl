@@ -3,10 +3,12 @@
 
 (in-package "RVASM")
 
-        ;;;; compressed formats ;;;;
+        ;;;; Compressed 'C' module instruction formats ;;;;
 
 ;; cr - Compressed Register
 (defun creg (rd rs1 op4 op2)
+  "RISC-V compressed 'C' modules instruction format for instructions that
+   use two x0..x15 registers ."
   (build-expr-code '(4 5 5 2) op4 (regno rd) (regno rs1) op2)
   ;)
   )
@@ -14,6 +16,8 @@
 
 ;; ci  - Compressed Immediate
 (defun cimm (imm6 rd op1 op2)
+  "RISC-V compressed 'C' modules instruction format for instructions that
+   use an x0..x15 register and a 6-bit immediate ."
   (let ((addr *pc*))
     (delay :cimm (imm6)
       (if (immp imm6 6)
@@ -23,50 +27,52 @@
    )    )   )
 
 ;; ciw - Compressed Wide Immediate
-(defun ciwid (imm8 rd op1 op2)
+(defun ciwid (imm8 crd op1 op2)
+  "RISC-V compressed 'C' modules instruction format for instructions that
+   use a c  (x8..x15) register and a 8-bit immediate ."
   (let ((addr *pc*))
     (delay :ciwid (imm8)
       (if (immp imm8 8)
         (build-expr-code '(3 2 4 1 1 3 2) op1 (bits imm8 7 6) (bits imm8 5 2)
                                               (bits imm8 0 ) (bits imm8 1)
-                                              (cregno rd) op2);)
+                                              (cregno crd) op2);)
         (rv-error "ciwid: Immediate value out of range." addr))
       )  ))
 
 ;; cis - Compressed Immediate Small
-(defun cismal (imm6 rd op1 op2 op3)
+(defun cismal (imm6 crd op1 op2 op3) ;; not used
   (let ((addr *pc*))
     (delay :cismal (imm6)
       (if (immp imm6 6)
-        (build-expr-code '(3 1 2 3 5 2) op1 (bits imm6 5) op2 (cregno rd)
+        (build-expr-code '(3 1 2 3 5 2) op1 (bits imm6 5) op2 (cregno crd)
                                             (bits imm6 4 0) op3);)
         (rv-error "cismal: Immediate value out of range." addr))
       ) ))
 
 
 ;; cl - Compressed Load
-(defun cload (imm5 rd rs1 op1 op2)
+(defun cload (imm5 crd crs1 op1 op2) ;; not used
   (let ((addr *pc*))
     (delay :cload (imm5)
       (if (immp imm5 5)
-        (build-expr-code '(3 3 3 2 3 2) op1 (bits imm5 2 0) (cregno rs1)
-                                            (bits imm5 4 3) (cregno rd) op2);)
+        (build-expr-code '(3 3 3 2 3 2) op1 (bits imm5 2 0) (cregno crs1)
+                                            (bits imm5 4 3) (cregno crd) op2);)
         (rv-error "cload: Immediate value out of range." addr))
       ) ))
 
 ;; cs - Compressed Store
-(defun cstore (imm5 rs1 rs2 op1 op2)
+(defun cstore (imm5 crs1 crs2 op1 op2) ;; not used
   (let ((addr *pc*))
     (delay :cstore (imm5)
       (if (immp imm5 5)
         (build-expr-code '(3 3 3 1 1 3 2)
-                           op1 (bits imm5 3 1) (cregno rs1)
-                               (bits imm5 0) (bits imm5 4) (cregno rd) op2);)
+                           op1 (bits imm5 3 1) (cregno crs1)
+                               (bits imm5 0) (bits imm5 4) (cregno crd) op2);)
         (rv-error "cstore: immediate value out of range." addr))
       ) ))
 
 ;; css - Compressed Stack Relative Store
-(defun cstst (imm6 rs2 op1 op2)
+(defun cstst (imm6 rs2 op1 op2) ;; not used
   (let ((addr *pc*))
     (delay :cstst (imm6)
       (if (immp imm6 6)
@@ -76,15 +82,19 @@
       ) ))
 
 ;; ca - Compressed Arithmetic
-(defun carith (op3 op1 op2 rd op2b rs2)
+(defun carith (op3 op1 op2 crd op2b crs2)
+  "RISC-V compressed 'C' modules instruction format for instructions that
+   use 2 'c' (x8..x15) registers."
   ;; (if (and (cregp rd) (cregp rs2))
-        (build-expr-code '(3 1 2 3 2 3 2) op3 op1 op2 (cregno rd) op2b
-                                          (cregno rs2) 1);)
+        (build-expr-code '(3 1 2 3 2 3 2) op3 op1 op2 (cregno crd) op2b
+                                          (cregno crs2) 1);)
       ;; (rv-error "C won't fit."))
    )
 
 ;; cj - Compressed Jump
 (defun cjump (imm funct3 op)
+  "RISC-V compressed 'C' modules instruction format for jump instructions that
+  take only immediate arguments"
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :cjump (ofst) ;(imm)
      ;; (let ((ofst (offset imm addr)))
@@ -104,7 +114,9 @@
 );;)
 
 ;; cb - Compressed Branch
-(defun cbranch (imm rs1 funct3 op)
+(defun cbranch (imm crs1 funct3 op)
+  "RISC-V compressed 'C' modules instruction format for branch instructions that
+  take a 'c' (x8..x15) register and an immediate as arguments"
   (let ((addr *pc*) (ofst (offset imm))); addr)))
     (delay :cbranch (ofst)
       (cond ((not (immp ofst 9))
@@ -114,7 +126,7 @@
             (t
       ;; (if (imm? imm8 8)
              (build-expr-code '(3 1 2 3 2 2 1 2)
-                              funct3 (bits ofst 8) (bits ofst 4 3) (cregno rs1)
+                              funct3 (bits ofst 8) (bits ofst 4 3) (cregno crs1)
                               (bits ofst 7 6) (bits ofst 2 1) (bits ofst 5) op)
              ;; (rv-error "immediate value out of range." addr))
              )
@@ -137,16 +149,18 @@
 ;;     (emit '(3 1 2 3 2 3 2) op3 op1 op2 (cregno rd) op2b (cregno rs2) 1))
 ;;    (t (error* "C won't fit"))))
 
-        ;;;; base formats ;;;;
+        ;;;; base 'I' modlule formats ;;;;
 
 (defun register (funct7 rs2 rs1 funct3 rd op)
+  "RISC-V base 'I' modules instruction format for instructions that
+   use three registers."
     (build-expr-code '(7 5 5 3 5 7) funct7 (regno rs2) (regno rs1) funct3
                                     (regno rd) op));)
 
-;; (defun register (funct7 rs2 rs1 funct3 rd op)
-  ;; (emit* '(7 5 5 3 5 7) funct7 (regno rs2) (regno rs1) funct3 (regno rd) op))
 
 (defun immed (imm12 rs1 funct3 rd op)
+  "RISC-V base 'I' modules instruction format for instructions that
+   use two registers and a 12-bit immediate 'imm12'."
   (let ((addr *pc*))
   (delay :immed (imm12)
       (if (immp imm12 12)
@@ -165,6 +179,8 @@
 ;;     (error* "Immediate value out of range."))))
 
 (defun branch (imm rs2 rs1 funct3 op)
+  "RISC-V base 'I' modules instruction format for branch instructions that
+   compare rs1 and rs2 and jump to immedate (label) 'imm'."
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :branch (ofst) ; (imm)
       ;; (let ((ofst (offset imm addr)))
@@ -191,6 +207,8 @@
 ;;            (regno rs1) funct3 (bits off 4 1) (bits off 11) funct7)))
 
 (defun jump (imm rd)
+  "RISC-V base 'I' modules instruction format for jump and link instructions that
+   store the return address in rd and jump to immediate (label) 'imm'."
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :jump (ofst) ;(imm)
       ;; (let ((ofst (offset imm addr)))
@@ -214,6 +232,9 @@
 ;;   (emit* '(1 10 1 8 5 7) imm20 imm10-1 imm11 imm19-12 rd op))
 
 (defun store (imm12 src base funct3)
+  "RISC-V base 'I' modules instruction format for instructions that store the contents
+   of the address created by adding the contents of the 'base' register
+   to the 12-bit immediate 'imm12' into the 'src' register."
   (let ((addr *pc*))
     (delay :store (imm12)
       (if (immp imm12 12)
@@ -225,6 +246,8 @@
 
 
 (defun upperimm (imm32 rd op)
+  "RISC-V base 'I' modules format for function that load 20-bit upper immediate in base 'I' modules.
+  This funciton expects a 32-bit immediate that is a multiple of #x1000(4096)."
   (let ((addr *pc*))
     (delay :upperimm (imm32)
       (cond ((not (immp imm32 32))
@@ -240,6 +263,8 @@
         ;;;; multiply formats ;;;;
 
 (defun muldiv (rs2 rs1 funct3 rd op)
+  "RISC-V format for multiplication and division instructions in
+   Integer multiplication and division 'M' modules"
     (build-expr-code '(7 5 5 3 5 7) 1 (regno rs2) (regno rs1) funct3
                                       (regno rd) op));)
 
@@ -247,6 +272,8 @@
         ;;;; Control and Status Register formats ;;;;
 
 (defun csrreg (csr rs1 funct3 rd)
+  "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
+  that use registers."
   (let ((addr *pc*))
     (delay :csr (csr)
       (if (uimmp csr 12)
@@ -256,6 +283,8 @@
 
 
 (defun csrimm (csr uimm5 funct3 rd)
+  "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
+  that use 5-bit immediates."
   (let ((addr *pc*))
     (delay :csri (uimm5 csr)
       (cond ((not (uimmp uimm5 5))
