@@ -74,6 +74,7 @@ This can be used as the actual assembler
 - Modular code to mirror the modularity of the RISC-V instruction set Architecture.
 - Concise and fast machine code output.
 - Modularity.
+- Upload output file to development board from lisp environment.
 - Remaining finalized instruction modules.
 - 64-bit.
 - Automate building an assembler for a chip from specified modules
@@ -87,6 +88,7 @@ This can be used as the actual assembler
 - Targeting Multiple Instruction Set Architectures (though the lrv-korr could be used for this).
  
 * TODO
+- [ ] Add built in DFU (Device Firmware Ugrade) utility (using libusb?).
 - [ ] Optimize compiler (lrv-env.cl) for optional compressed instruction set automatically (and clearly).
 - [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or seperate file.
 - [ ] Include all finalized RISC-V modules.

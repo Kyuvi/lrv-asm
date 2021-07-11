@@ -54,6 +54,3 @@
 (in-package "RVASM")
 
 (load "~/.eclrc")
-;;
-;; (load "~/zin/cl/clset.lisp")
-

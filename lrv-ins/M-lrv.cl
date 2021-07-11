@@ -5,6 +5,7 @@
   (:nicknames :m32)
   (:use :cl :rvasm)
   (:export #:m.mul #:m.mulh #:m.mulhsu #:m.mulhu #:m.div #:m.divu #:m.rem #:m.remu
+  ;; (:export #:mul #:mulh #:mulhsu #:mulhu #:div #:divu #:rem #:remu
            ))
 
    (in-package "M-32-RV")
@@ -77,9 +78,11 @@
 (defpackage "M-64-RV"
   (:use :cl :rvasm :m-32-rv)
   (:export #:m.mul #:m.mulh #:m.mulhsu #:m.mulhu #:m.div #:m.divu #:m.rem #:m.remu
+  ;; (:export #:mul #:mulh #:mulhsu #:mulhu #:div #:divu #:rem #:remu
 
            ;; added or changed  in M-64
            #:m.mulv #:m.divv #:m.divuv #:m.remv #:m.remuv
+           ;; #:mulv #:divv #:divuv #:remv #:remuv
            ))
 
    (in-package "M-64-RV")

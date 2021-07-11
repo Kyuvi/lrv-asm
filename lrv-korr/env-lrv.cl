@@ -12,7 +12,7 @@
                 :initform (make-array 0 :adjustable t :fill-pointer t))
    (address :initarg :address :accessor env-address :initform 0))
   (:documentation "Code-vector class with a code-vector slot containg a vector
-   of bytes and an address slot which holds the byte address of the last vector")
+   of bytes and an address slot which holds the byte address of the last byte")
   )
 
 ;; As most assembly code contains labels to jump to this class provides
@@ -117,6 +117,13 @@
 
 
         ;;;; bits, bytes, jaits, vaits, zaits and yaits ;;;;
+
+;; The instruction are loaded into the vector in a series of bytes (8-bits)
+;; Risc-v uses Indus instructions, also known as little endian, this meeans
+;; the 32 or 16 bit instructions are inverted bytewise (8-bits) before being
+;; stored into memory
+
+
 
 ;; get a single byte sized chunk of a number
 ;; (defun get-bait (n val)

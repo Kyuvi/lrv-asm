@@ -164,23 +164,19 @@
 (defun lnotb (x)
   "logical not byte
    The lSB byte value of the logical not of 'x'"
-  ;; (bits (lognot x) 8 0))
   (lnot-imm x 8))
 
 (defun lnotj (x)
   "logical not jyte
    The lSB jyte value of the logical not of 'x'"
-  ;; (bits (lognot x) 16 0))
   (lnot-imm x 16))
 
 (defun lnotv (x)
   "logical not vyte
    The lSB vyte value of the logical not of 'x'"
-  ;; (bits (lognot x) 32 0))
   (lnot-imm x 32))
 
 (defun lnotz (x)
   "logical not zyte
    The lSB zyte value of the logical not of 'x'"
-  ;; (bits (lognot x) 64 0))
   (lnot-imm x 64))
