@@ -37,6 +37,7 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 
 (a simple example targeting the longan development board from a file in the top level)
 -----
+#+BEGIN_SRC lisp
 
 (in-package cl-user)
 
@@ -63,6 +64,10 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 (in-package :longan)
 
 ;; =code starts here=
+(addi 'x1 'x0 20)  ;; laod 20 into register x1
+
+#+END_SRC
+
 
 -----
 
