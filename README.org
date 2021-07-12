@@ -12,10 +12,15 @@ It is not optimized for using compressed instructions, and when using the "I-C-3
 * Syntax and Notation
 ** Assembly Related
 It includes some changes to the standard assembly notation and syntax namely....
+
 byte - 8-bit   (byte)
+
 jait - 16-bit  (half word)
+
 vait - 32-bit  (word)
+
 zait - 64-bit  (double word)
+
 yait - 128-bit (quad word)
 
 Though I will probably use Double and Quad for the floating point module names as the module letters are derived from that.
@@ -33,6 +38,8 @@ I shadowed "and" "or" "not" (in the I-C-32-lrv module) and will probably shadow 
 While in Common Lisp the notation =+constant+= is sometimes used for constants, I just added a phi symbol to the end to represent constants i.e. =constantΦ=, it turns out there are a lot of constants in the RISC-V ISA (see ./lrv-ins/csr-lrv.cl).
 
 * Installation and Use
+This depends on having (Embeddable) Common lisp installed on the computer already.
+
 Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF. so the files need to be loaded into a lisp environment in order and a now package made using the right modules to target a particular chip.
 
 (a simple example targeting the longan development board from a file in the top level)
@@ -71,7 +78,7 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 
 -----
 
-This can be used as the actual assembler
+This can then be used as the actual assembler
 
 * Plans and Goals
 ** Goals
@@ -108,4 +115,5 @@ Technoblogy's [[https://github.com/technoblogy/lisp-riscv-assembler][RISC-V asse
 
 Also thanks to
 [[https://github.com/dkochmanski][Daniel Kochmanski]].
+
 Andrew Dailey's [[https://github.com/theandrew168/bronzebeard][Bronzebeard project]].
