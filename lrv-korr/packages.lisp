@@ -51,6 +51,6 @@
 ;;    ))
 
 
-(in-package "RVASM")
+;; (in-package "RVASM")
 
-(load "~/.eclrc")
+;; (load "~/.eclrc")
