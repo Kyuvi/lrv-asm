@@ -40,7 +40,7 @@ While in Common Lisp the notation =+constant+= is sometimes used for constants, 
 * Installation and Use
 This depends on having (Embeddable) Common lisp installed on the computer already.
 
-Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF. so the files need to be loaded into a lisp environment in order and a now package made using the right modules to target a particular chip.
+Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF. so the files need to be loaded into a lisp environment in order and a new package made using the right modules to target a particular chip.
 
 (a simple example targeting the longan development board from a file in the top level)
 -----
@@ -63,7 +63,7 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 
 
 (defpackage "LONGAN"
-  (:use :cl :rvasm :c32 :i32 :i-c32 :rdv :m32 :zicsr :csr32)
+  (:use :cl :rvasm :c32 :i32 :ic32 :rdv :m32 :zicsr :csr32)
   (shadowing-import-from :i-c32 and or beqz bnez ) ;; beqz & bnez defined in rvdrv also.
   (shadowing-import-from :rdv not )
 # ;; (shadowing-import-from :m32 rem ))
@@ -74,11 +74,9 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 (addi 'x1 'x0 20)  ;; laod 20 into register x1
 
 #+END_SRC
-
-
 -----
 
-This can then be used as the actual assembler
+This can then be used as the actual assembler for the GD32-IMAC chip on the longan developement board.
 
 * Plans and Goals
 ** Goals
@@ -87,19 +85,22 @@ This can then be used as the actual assembler
 - Concise and fast machine code output.
 - Modularity.
 - Upload output file to development board from lisp environment.
-- Remaining finalized instruction modules.
+- Simplified assembly syntax (no parenthesis or quotes)
+- Include remaining finalized RISC-V instruction modules.
 - 64-bit.
 - Automate building an assembler for a chip from specified modules
 
 ** Long term Goals
 - 128-bit.
 - Asdf build system and quicklisp (after design stabilization).
+- All RISC-V instruction modules including those not yet finalized
 
 ** Non Goals
 - Speed of assembly/compiling process.
 - Targeting Multiple Instruction Set Architectures (though the lrv-korr could be used for this).
  
 * TODO
+- [ ] Change readtable to accept assembly syntax without parenthesis or quotes
 - [ ] Add built in DFU (Device Firmware Ugrade) utility (using libusb?).
 - [ ] Optimize compiler (lrv-env.cl) for optional compressed instruction set automatically (and clearly).
 - [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or seperate file.
@@ -114,6 +115,7 @@ Andy Hefner's [[https://github.com/ahefner/asm6502][asm-6502]], https://ahefner.
 Technoblogy's [[https://github.com/technoblogy/lisp-riscv-assembler][RISC-V assembler]], http://www.ulisp.com/show?310Z.
 
 Also thanks to
-[[https://github.com/dkochmanski][Daniel Kochmanski]].
 
+[[https://github.com/dkochmanski][Daniel Kochmanski]]
+and
 Andrew Dailey's [[https://github.com/theandrew168/bronzebeard][Bronzebeard project]].
