@@ -39,14 +39,14 @@
 
 (defun regno (sym)
  "Extract register number
-  x0-31 = Normal Register names
+  x0-31 = Normal Register Names
   zero = x0
   ra = Return Address = x1
   sp = Stack Pointer = x2
   gp = Global Pointer = x3
   tp = Thread Pointer = x4
   t0 = Temporary/alternate link register = x5
-  t1-2 = temporaries = x6-7
+  t1-2 = Temporaries = x6-7
   s0 = Saved Register = x8
   fp = Frame Pointer = x8
   s1 = Saved Register = x9
@@ -54,7 +54,7 @@
   a2-7 = Function arguments = x12-17
   s2-11 = Saved Registers = x18-27
   t3-6 = Temporaries = x28-31
-  r0-r31 = local register names
+  r0-r31 = Local Register Names
 "
   ;; Note: the first (non calculated) register names need to be exported
   (case sym (zero 0) ; zero register

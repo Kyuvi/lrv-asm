@@ -101,8 +101,8 @@
    constanst end in 'Φ' and documentation is in the form  'csr description csr-access'
    csr-access is one of urw, uro, srw, sro, hrw, hro, mrw, mro
    u - user, s - supervisor, m - machine, r - read,  w - write, o - only")
-  (:nicknames :csr32)
-  ;; (:use :cl :rvasm)
+  (:nicknames :csr32 :csrmm32)
+  (:use :cl :rvasm :csr)
   (:export
            ;; User Trap Setup
            #:ustatus-csrΦ #:uie-csrΦ #:utvec-csrΦ
@@ -200,7 +200,7 @@
            #:rdtime #:rdtimeh #:read-time
    ))
 
-
+(in-package :csrmm32)
 ;; format of a constant in this module:
 ;;(defconstant <csr name> <csr number>   "<csr description> <csr access>")
 ;;
