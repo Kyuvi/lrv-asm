@@ -20,7 +20,7 @@ It includes some changes to the standard assembly notation and syntax namely....
 - zait - 64-bit  (double word)
 - yait - 128-bit (quad word)
 
-Though I will probably use Double and Quad for the floating point module names as the module letters are derived from that.
+Though I will probably use Double and Quad for the floating point module names as the module letters are derived from those.
 
 also sv/lv (store vait/load vait) are of the form....
 - (sv rs rb imm) ;; sv source-reg base-reg immediate
@@ -38,9 +38,9 @@ While in Common Lisp the notation =+constant+= is sometimes used for constants, 
 * Installation and Use
 This depends on having (Embeddable) Common lisp installed on the computer already.
 
-Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF. so the files need to be loaded into a lisp environment in order and a new package made using the right modules to target a particular chip.
+Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF, so the files need to be loaded into a lisp environment in order and a new package made using the right modules to target a particular chip.
 
-(a simple example targeting the longan development board from a file in the top level i.e. the same level as this README.org)
+A simple example targeting the longan development board from a file in the top level i.e. the same level as this README.org. This same example is in the examples folder.
 -----
 #+BEGIN_SRC lisp
 
@@ -67,11 +67,15 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 
 (in-package :longan)
 
-;; set up chip specific environment
+;; set up chip specific environment with code starting at address 0
 
 (defparameter *env* (make-instance 'basic-env :address 0))
 
 (defparameter *max-address* 128000) ;; longan internal flash is 128kb
+
+
+;; This can then be used as the actual assembler
+;; for the GD32-IMAC chip on the longan developement board.
 
 ;; =code starts here=
 (addi 'x1 'x0 #x20)  ;; load 20 into register x1
@@ -83,7 +87,7 @@ Due to time, personal and design reasons (the design is nowhere near complete as
 #+END_SRC
 -----
 
-This can then be used as the actual assembler for the GD32-IMAC chip on the longan developement board.
+# This can then be used as the actual assembler for the GD32-IMAC chip on the longan developement board.
 
 * Plans and Goals
 ** Goals

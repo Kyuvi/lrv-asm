@@ -145,14 +145,14 @@
 (defun i.sll (rd rs1 rs2)
   "(i.sll rd rs1 rs2)
    Shift left logical: Load rd with the result of shifting the contents of reg1
-  left by the amount in reg2 which must contain a number between 0 and 31."
+   left by the amount in reg2 which must contain a number between 0 and 31."
  (emit-vait (register 0 rs2 rs1 1 rd #x33))
   )
 
 (defun i.slt (rd rs1 rs2)
   "(i.slt rd rs1 rs2)
    Set if less than: Set the value of rd to 1 if the value in reg1 is less that
-  the value in reg2, using signed comparison."
+   the value in reg2, using signed comparison."
  (emit-vait (register 0 rs2 rs1 2 rd #x33))
   )
 
@@ -275,7 +275,7 @@
 
 (defun i.lb (rd rs1 imm12)
   "(i.lb rd rs1 imm12)
-   Load byte: The 12-bit immediate is added to the value of reg1 to form a
+   Load byte: The 12-bit immediate is added to the value of rs1 to form a
    memory address An 8-bit value (byte) is fetched from this address and loaded
    into rd The value is sign exteded to the full length of the register."
   (emit-vait (immed imm12 rs1 0 rd 3))
@@ -283,7 +283,7 @@
 
 (defun i.lj (rd rs1 imm12)
   "(i.lj rd rs1 imm12)
-   Load jait: The 12-bit immediate is added to the value of reg1 to form a memory
+   Load jait: The 12-bit immediate is added to the value of rs1 to form a memory
    address. A 16-bit value (jait) is fetched from this address and loaded into rd.
    The value is sign exteded to the full length of the register."
   (emit-vait (immed imm12 rs1 1 rd 3))
@@ -291,7 +291,7 @@
 
 (defun i.lv (rd rs1 imm12)
   "(i.lv rd rs1 imm12)
-   Load vait: The 12-bit immediate is added to the value of reg1 to form a memory
+   Load vait: The 12-bit immediate is added to the value of rs1 to form a memory
    address. A 32-bit value (vait) is fetched from this address and loaded into rd.
    The value is sign exteded to the full length of the register."
   (emit-vait (immed imm12 rs1 2 rd 3))
@@ -299,7 +299,7 @@
 
 (defun i.lbu (rd rs1 imm12)
   "(i.lbu rd rs1 imm12)
-   Load unsigned byte: The 12-bit immediate is added to the value of reg1 to
+   Load unsigned byte: The 12-bit immediate is added to the value of rs1 to
    form a memory address An 8-bit value is fetched from this address and loaded
    into rd. The value is zero exteded to the full length of the register."
   (emit-vait (immed imm12 rs1 4 rd 3))
@@ -307,7 +307,7 @@
 
 (defun i.lju (rd rs1 imm12)
   "(i.lju rd rs1 imm12)
-   Load unsigned jait: The 12-bit immediate is added to the value of reg1 to
+   Load unsigned jait: The 12-bit immediate is added to the value of rs1 to
    form a memory address A 16-bit value is fetched from this address and loaded
    into rd. The value is zero exteded to the full length of the register."
   (emit-vait (immed imm12 rs1 5 rd 3))
@@ -350,11 +350,13 @@
 ;; (defun i.fence.i ())
 
 (defun i.ecall ()
-  "(i.ecall)"
+  "(i.ecall)
+   Environment Call"
   (emit-vait (build-expr-code '(16 16) 0 #x73)))
 
 (defun i.ebreak ()
-  "(i.ebreak)"
+  "(i.ebreak)
+   Environment Break"
   (emit-vait (build-expr-code '(16 16) #x10 #x73))) ;c
 
 ;; (defun i.csrrw (rd rs1))
