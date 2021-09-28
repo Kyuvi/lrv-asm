@@ -13,22 +13,22 @@
    ))
 
 (in-package "ZICSR-RV")
-
+;; TODO change from rd rs1 csr to rd csr rs1
         ;;;; register instructions ;;;;
 
-(defun csrrw (rd rs1 csr)
+(defun csrrw (rd csr rs1)
   "(csrrw rd rs1 csr)
    Reads contents of csr (zero extended) into rd and writes contents of rs1 to the csr.
    If rd = x0 does not read and only writes to csr."
   (emit-vait (csrreg csr rs1 1 rd)))
 
-(defun csrrs (rd rs1 csr)
+(defun csrrs (rd csr rs1)
   "(csrrs rd rs1 csr)
    Reads contents of csr (zero extended) into rd and sets the bits in the csr
    that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 2 rd)))
 
-(defun csrrc (rd rs1 csr)
+(defun csrrc (rd csr rs1)
   "(csrrc rd rs1 csr)
    Reads contents of csr (zero extended) into rd and clears the bits in the csr
    that are set in rs1. If rs1 = x0 does not write and only reads from csr."
@@ -36,20 +36,20 @@
 
         ;;;; immediate instructions ;;;;
 
-(defun csrrwi (rd uimm5 csr)
+(defun csrrwi (rd csr uimm5)
   "(csrrwi rd uimm5 csr)
    Reads contents of csr into rd and writes zero extended immediate 'uimm5' to the csr.
    If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 5 rd)))
 
-(defun csrrsi (rd uimm5 csr)
+(defun csrrsi (rd csr uimm5)
   "(csrrsi rd uimm5 csr)
    Reads contents of csr (zero extended) into rd and sets the bits in the csr
    that are set in the immediate 'uimm5'.
    If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 6 rd)))
 
-(defun csrrci (rd uimm5 csr)
+(defun csrrci (rd csr uimm5)
   "(csrrci rd uimm5 csr)
    Reads contents of csr (zero extended) into rd and clears the bits in the csr
    that are set in the immediate 'uimm5'.
@@ -61,39 +61,39 @@
 (defun csrr (rd csr)
   "(csrr rd csr)
     Reads contents of csr (zero extended) to rd"
-  (csrrs rd 'x0 csr ))
+  (csrrs rd csr 'x0))
 
 (defun csrw (rs1 csr)
  "(csrw rs1 csr)
    Write contents of rs1 to csr"
-  (csrrw 'x0 rs1 csr ))
+  (csrrw 'x0 csr rs1))
 
 (defun csrs (rs1 csr)
   "(csrs rs1 csr)
    Sets the bits in the csr that are set in rs1"
-  (csrrs 'x0 rs1 csr ))
+  (csrrs 'x0 csr rs1))
 
 (defun csrc (rs1 csr)
   "(csrc rs1 csr)
    Clears the bits in the csr that are set in rs1"
-  (csrrc 'x0 rs1 csr ))
+  (csrrc 'x0 csr rs1))
 
         ;;;;  derived immediate instructions  ;;;;
 
 (defun csrwi (uimm5 csr)
  "(csrw uimm5 csr)
    Write zero extended immediate 'uimm5' to csr"
-  (csrrwi 'x0 uimm5 csr ))
+  (csrrwi 'x0 csr uimm5))
 
 (defun csrsi (uimm5 csr)
   "(csrsi uimm5 csr)
    Sets the bits in the csr that are set in the immediate 'uimm5'"
-  (csrrsi 'x0 uimm5 csr ))
+  (csrrsi 'x0 csr uimm5))
 
 (defun csrci (uimm5 csr)
   "(csrci uimm5 csr)
    Clears the bits in the csr that are set in the immediate 'uimm5'"
-  (csrrci 'x0 uimm5 csr ))
+  (csrrci 'x0 csr uimm5))
 
 
 (defpackage "CSR-MMAP-32-RV"
