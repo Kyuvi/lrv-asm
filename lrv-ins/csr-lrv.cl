@@ -63,34 +63,34 @@
     Reads contents of csr (zero extended) to rd"
   (csrrs rd csr 'x0))
 
-(defun csrw (rs1 csr)
+(defun csrw (csr rs)
  "(csrw rs1 csr)
-   Write contents of rs1 to csr"
-  (csrrw 'x0 csr rs1))
+   Write contents of rs to csr"
+  (csrrw 'x0 csr rs))
 
-(defun csrs (rs1 csr)
+(defun csrs (csr rs)
   "(csrs rs1 csr)
-   Sets the bits in the csr that are set in rs1"
-  (csrrs 'x0 csr rs1))
+   Sets the bits in the csr that are set in rs"
+  (csrrs 'x0 csr rs))
 
-(defun csrc (rs1 csr)
+(defun csrc (csr rs)
   "(csrc rs1 csr)
-   Clears the bits in the csr that are set in rs1"
-  (csrrc 'x0 csr rs1))
+   Clears the bits in the csr that are set in rs"
+  (csrrc 'x0 csr rs))
 
         ;;;;  derived immediate instructions  ;;;;
 
-(defun csrwi (uimm5 csr)
+(defun csrwi (csr uimm5)
  "(csrw uimm5 csr)
    Write zero extended immediate 'uimm5' to csr"
   (csrrwi 'x0 csr uimm5))
 
-(defun csrsi (uimm5 csr)
+(defun csrsi (csr uimm5)
   "(csrsi uimm5 csr)
    Sets the bits in the csr that are set in the immediate 'uimm5'"
   (csrrsi 'x0 csr uimm5))
 
-(defun csrci (uimm5 csr)
+(defun csrci (csr uimm5)
   "(csrci uimm5 csr)
    Clears the bits in the csr that are set in the immediate 'uimm5'"
   (csrrci 'x0 csr uimm5))
