@@ -345,6 +345,9 @@
 (defun emit-zait (&rest zaits)
   (dolist (zait zaits) (env-emit *env* (encode-zait zait))))
 
+(defun emit-yait (&rest yaits)
+  (dolist (yait yaits) (env-emit *env* (encode-yait yait))))
+
 (defun advance-to (offset &optional (fill-byte #xff))
   (let ((delta (- offset (env-address *env*))))
     (when (< delta 0)
@@ -368,7 +371,8 @@
 
 
 (defun set-label (name &optional (env *env*))
-   (env-set-label env name) name)
+  (env-set-label env name)
+  name)
 
 (defun label-difference (start-name end-name)
   (let ((start (label start-name))
