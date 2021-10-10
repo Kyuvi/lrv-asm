@@ -34,7 +34,7 @@
 ;; =code starts here=
 (addi 'x10 'x0 #h20)  ;; load 20 into register x1
 (addi 'x11 'x0 #y101)  ;; load 5 into register x1
-(add 'x10 'x10 'x11)  ;; load 5 into register x1
+(add 'x10 'x10 'x11)  ;; add x10 to x11 and store the result in x10
 
 
 ;; set output file
