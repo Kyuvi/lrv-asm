@@ -8,7 +8,7 @@
          #:tcomp #:splnum #:imm #:uimm
    ))
 
-;; (use-package :durv)
+ (use-package :durv)
 (in-package :durv)
 
 (defun tcomp (num &optional (len 0))
@@ -43,7 +43,8 @@
    using twos complement. Returns a list of the minimum and maximum numbers"
   (let* ((maxm (loop for v from (- num 2) downto 0 sum (expt 2 v)))
          (minm (- (+ 1 maxm))))
-    (format t "For a signed integer with length = ~d,~%minimum = ~:d | ~:*#x~:x,~%~
+    (format t "For a signed integer with a bit length of ~d,~%~
+               minimum = ~:d | ~:*#x~:x,~%~
                maximum = ~:d | ~:*#x~:x"
             num minm maxm); minm maxm maxm)
     (list minm maxm)
@@ -55,7 +56,8 @@
    Returns the maximum number"
   (let ((maxm (loop for v from (- num 1) downto 0 sum (expt 2 v))))
     ;; (format t "length = ~d minimum = 0, maximum = ~d / #b~b / #x~x" num max max max)
-    (format t "For an unsigned integer with length = ~d,~%minimum = 0, ~
+    (format t "For an unsigned integer with a bit length of ~d,~%~
+               minimum = 0, ~
                maximum = ~:d | ~:*#x~:x" num maxm); maxm)
     maxm
   ))
