@@ -160,7 +160,7 @@
           (emit-vait
            (delay :laiupcb (imm imm12 imm20)
              (if (cl:not (immp imm 32))
-                 (rv-error "li: Upper Immediate value out of range." addr)
+                 (rv-error "lfb: Upper Immediate value out of range." addr)
                  (build-expr-code '(20 5 7)
                                   (bits (if (= (logand imm12 #x800) #x800)
                                             ;; test for addi overflow/sign extension??
@@ -182,7 +182,7 @@
           (emit-vait
            (delay :laiupcj (imm imm12 imm20)
              (if (cl:not (immp imm 32))
-                 (rv-error "li: Upper Immediate value out of range." addr)
+                 (rv-error "lfj: Upper Immediate value out of range." addr)
                  (build-expr-code '(20 5 7)
                                   (bits (if (= (logand imm12 #x800) #x800)
                                             ;; test for addi overflow/sign extension??
@@ -204,7 +204,7 @@
         (emit-vait
          (delay :laiupcv (imm imm12 imm20)
            (if (cl:not (immp imm 32))
-                (rv-error "li: Upper Immediate value out of range." addr)
+                (rv-error "lfv: Upper Immediate value out of range." addr)
                 (build-expr-code '(20 5 7)
                                  (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
@@ -226,7 +226,7 @@
         (emit-vait
          (delay :saiupcb (imm imm12 imm20)
            (if (cl:not (immp imm 32))
-                (rv-error "li: Upper Immediate value out of range." addr)
+                (rv-error "sfb: Upper Immediate value out of range." addr)
                 (build-expr-code '(20 5 7)
                                  (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
@@ -249,41 +249,41 @@
         (emit-vait
          (delay :saiupcj (imm imm12 imm20)
            (if (cl:not (immp imm 32))
-                (rv-error "li: Upper Immediate value out of range." addr)
+                (rv-error "sfj: Upper Immediate value out of range." addr)
                 (build-expr-code '(20 5 7)
                                  (bits (if (= (logand imm12 #x800) #x800)
                                      ;; test for addi overflow/sign extension??
-                                            (+ imm20 #x1000) imm20 )
-                                             ;;simulate overflow/sign extension
-                                           31 12) (regno rd) #x17))))
+                                           (+ imm20 #x1000) imm20 )
+                                       ;;simulate overflow/sign extension
+                                       31 12) (regno rd) #x17))))
         (emit-vait
          (delay :sfj (imm12)
            (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
                             1 (bits imm12 4 0) #x23)))
-        )))
+        ))))
 
 (defun sfv (rs rb imm)
   (let ((ofst (offset imm)))
-  (if (cl:and (ingtegerp imm) (immp ofst 12))
-      (i.sv rd rd imm)
-      (let ((addr *pc*)  ; (ofst (offset imm))
-            (imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
-            (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
-        (emit-vait
-         (delay :saiupcv (imm imm12 imm20)
-           (if (cl:not (immp imm 32))
-                (rv-error "li: Upper Immediate value out of range." addr)
-                (build-expr-code '(20 5 7)
-                                 (bits (if (= (logand imm12 #x800) #x800)
-                                     ;; test for addi overflow/sign extension??
+    (if (cl:and (ingtegerp imm) (immp ofst 12))
+        (i.sv rd rd imm)
+        (let ((addr *pc*)  ; (ofst (offset imm))
+              (imm12 (delay :imm12 (imm) (logand imm #x00000fff)))
+              (imm20 (delay :imm20 (imm) (logand imm #xfffff000))))
+          (emit-vait
+           (delay :saiupcv (imm imm12 imm20)
+             (if (cl:not (immp imm 32))
+                 (rv-error "sfv: Upper Immediate value out of range." addr)
+                 (build-expr-code '(20 5 7)
+                                  (bits (if (= (logand imm12 #x800) #x800)
+                                            ;; test for addi overflow/sign extension??
                                             (+ imm20 #x1000) imm20 )
-                                             ;;simulate overflow/sign extension
-                                           31 12) (regno rd) #x17))))
-        (emit-vait
-         (delay :sfv (imm12)
-           (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
-                            2 (bits imm12 4 0) #x23)))
-        )))
+                                        ;;simulate overflow/sign extension
+                                        31 12) (regno rd) #x17))))
+          (emit-vait
+           (delay :sfv (imm12)
+             (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
+                              2 (bits imm12 4 0) #x23)))
+          ))))
 
 ;; TODO: is it possible to add comprsessed instructions? needs test c.jal offset 12?
 (defun call (imm)
