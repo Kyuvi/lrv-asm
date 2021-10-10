@@ -462,6 +462,34 @@
         (t (i.lv rd rs1 imm12)))
    );) ;cc
 
+(defun lfv (crd cimm)
+  (let ((ofst (offset cimm)))
+    (cond ((cl:and (ingtegerp imm) (zerop (logand ofst #xff83))
+                   (cregp crd) (cregp crs1))
+           (c.lv crd crd cimm))
+          ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff03))
+                   (cl:not (zerop (regno crd))) (= (regno crs1) 2))
+           (c.lvsp crd cimm))
+          ((cl:and (ingtegerp cimm) (immp ofst 12))
+           (i.lv crd crd cimm))
+      (let ((addr *pc*)  ; (ofst (offset imm))
+            (imm12 (delay :imm12 (cimm) (logand cimm #x00000fff)))
+            (imm20 (delay :imm20 (cimm) (logand cimm #xfffff000))))
+        (emit-vait
+         (delay :laiupcv (cimm imm12 imm20)
+           (if (cl:not (immp cimm 32))
+                (rv-error "li: Upper Immediate value out of range." addr)
+                (build-expr-code '(20 5 7)
+                                 (bits (if (= (logand imm12 #x800) #x800)
+                                     ;; test for addi overflow/sign extension??
+                                            (+ imm20 #x1000) imm20 )
+                                             ;;simulate overflow/sign extension
+                                           31 12) (regno rd) #x17))))
+        (emit-vait
+         (delay :lfv (imm12)
+           (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 2 (regno rd) #x3)))
+        )))
+
 (defun lbu (rd rs1 imm12)
   "(lbu rd rs1 imm12)
    Load unsigned byte: The 12-bit immediate is added to the value of reg1 to
@@ -508,6 +536,35 @@
          (c.svsp rs imm12))
         (t (i.sv rs rb imm12)))
       );) ;cc
+
+(defun sfv (crs crb cimm)
+  (let ((ofst (offset cimm)))
+    (cond ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff83))
+                   (cregp crs) (cregp crb))
+           (c.sv crs crb cimm))
+          ((cl:and (ingtegerp cimm) (zerop (logand cimm12 #xff03))
+                   (= (regno crb) 2))
+           (c.svsp crs crb cimm))
+          ((cl:and (ingtegerp cimm) (immp ofst 12))
+           (i.sv rs rb cimm))
+          (t (let ((addr *pc*)  ; (ofst (offset cimm))
+                   (imm12 (delay :imm12 (cimm) (logand cimm #x00000fff)))
+                   (imm20 (delay :imm20 (cimm) (logand cimm #xfffff000))))
+               (emit-vait
+                (delay :saiupcv (cimm imm12 imm20)
+                  (if (cl:not (immp cimm 32))
+                      (rv-error "li: Upper Immediate value out of range." addr)
+                      (build-expr-code '(20 5 7)
+                                       (bits (if (= (logand imm12 #x800) #x800)
+                                                 ;; test for addi overflow/sign extension??
+                                                 (+ imm20 #x1000) imm20 )
+                                             ;;simulate overflow/sign extension
+                                             31 12) (regno rd) #x17))))
+               (emit-vait
+                (delay :sfv (imm12)
+                  (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
+                                   2 (bits imm12 4 0) #x23)))
+               )))))
 
         ;;;; Miscellaneous Instructions ;;;;
 
