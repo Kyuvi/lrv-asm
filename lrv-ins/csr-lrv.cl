@@ -516,31 +516,31 @@
 (defconstant dscratch-csrΦ #x7B2 "Debug scratch register (mrw)")
 
 ;; Nonstandard
-(defconstant mtohost-csrΦ #x780 "IO to Host (mrw)")
-(defconstant mfromhost-csrΦ #x781 "IO from Host (mrw)")
-(defconstant mreset-csrΦ #x782 "Reset (mrw)")
-(defconstant mipi-csrΦ #x783 "Inter Processor Interrupt (mrw)")
-(defconstant miobase-csrΦ #x784 "IO Base (mrw)")
+;; (defconstant mtohost-csrΦ #x780 "IO to Host (mrw)")
+;; (defconstant mfromhost-csrΦ #x781 "IO from Host (mrw)")
+;; (defconstant mreset-csrΦ #x782 "Reset (mrw)")
+;; (defconstant mipi-csrΦ #x783 "Inter Processor Interrupt (mrw)")
+;; (defconstant miobase-csrΦ #x784 "IO Base (mrw)")
 
 ;; Not in standard?
-(defconstant csr-mtvtΦ #x307)
-(defconstant csr-mnxtiΦ #x345)
+;; (defconstant csr-mtvtΦ #x307)
+;; (defconstant csr-mnxtiΦ #x345)
 
 
-(defconstant csr-mtvt2Φ #x7ec)
-(defconstant csr-jalmnxtiΦ #x7ed)
-(defconstant csr-pushmcauseΦ #x7ee)
-(defconstant csr-pushmepcΦ #x7ef)
-(defconstant csr-pushmsubmΦ #x7eb)
+;; (defconstant csr-mtvt2Φ #x7ec)
+;; (defconstant csr-jalmnxtiΦ #x7ed)
+;; (defconstant csr-pushmcauseΦ #x7ee)
+;; (defconstant csr-pushmepcΦ #x7ef)
+;; (defconstant csr-pushmsubmΦ #x7eb)
 
-(defconstant csr-wfeΦ #x810) ;;
-(defconstant csr-sleepvalueΦ #x811) ;;
-(defconstant csr-txevtΦ #x812) ;;
+;; (defconstant csr-wfeΦ #x810) ;;
+;; (defconstant csr-sleepvalueΦ #x811) ;;
+;; (defconstant csr-txevtΦ #x812) ;;
 
-(defconstant csr-mcountinhibitΦ #x320 "Used to stop mcount. Bit0 - cycles, Bit2 - instret")
-(defconstant csr-mmisc-ctlΦ #x7d0) ;;
-(defconstant csr-mnvecΦ #x7c3)
-(defconstant csr-msubmΦ #x7c4) ;;
+;; (defconstant csr-mcountinhibitΦ #x320 "Used to stop mcount. Bit0 - cycles, Bit2 - instret")
+;; (defconstant csr-mmisc-ctlΦ #x7d0) ;;
+;; (defconstant csr-mnvecΦ #x7c3)
+;; (defconstant csr-msubmΦ #x7c4) ;;
 
 
         ;;;; csr-utility functions ;;;;
