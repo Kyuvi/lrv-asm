@@ -60,7 +60,7 @@
   (case sym (zero 0) ; zero register
             (ra 1) ; return address
             (sp 2) ; stack pointer
-            (gp 3) ; global pointer
+            (gp 3) ; global pointer - points to start of static region
             (tp 4) ; thread pointer
             (s0 8) ; saved register
             (fp 8) ; frame pointer

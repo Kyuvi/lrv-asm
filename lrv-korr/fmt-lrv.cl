@@ -7,8 +7,8 @@
 
 ;; cr - Compressed Register
 (defun creg (rd rs1 op4 op2)
-  "RISC-V compressed 'C' modules instruction format for instructions that
-   use two x0..x15 registers ."
+ "RISC-V compressed 'C' modules instruction format for instructions that
+  use two x0..x15 registers ."
   (build-expr-code '(4 5 5 2) op4 (regno rd) (regno rs1) op2)
   ;)
   )
@@ -16,8 +16,8 @@
 
 ;; ci  - Compressed Immediate
 (defun cimm (imm6 rd op1 op2)
-  "RISC-V compressed 'C' modules instruction format for instructions that
-   use an x0..x15 register and a 6-bit immediate ."
+ "RISC-V compressed 'C' modules instruction format for instructions that
+  use an x0..x15 register and a 6-bit immediate ."
   (let ((addr *pc*))
     (delay :cimm (imm6)
       (if (immp imm6 6)
@@ -28,8 +28,8 @@
 
 ;; ciw - Compressed Wide Immediate
 (defun ciwid (imm8 crd op1 op2)
-  "RISC-V compressed 'C' modules instruction format for instructions that
-   use a c  (x8..x15) register and a 8-bit immediate ."
+ "RISC-V compressed 'C' modules instruction format for instructions that
+  use a c  (x8..x15) register and a 8-bit immediate ."
   (let ((addr *pc*))
     (delay :ciwid (imm8)
       (if (immp imm8 8)
@@ -83,8 +83,8 @@
 
 ;; ca - Compressed Arithmetic
 (defun carith (op3 op1 op2 crd op2b crs2)
-  "RISC-V compressed 'C' modules instruction format for instructions that
-   use 2 'c' (x8..x15) registers."
+ "RISC-V compressed 'C' modules instruction format for instructions that
+  use 2 'c' (x8..x15) registers."
   ;; (if (and (cregp rd) (cregp rs2))
         (build-expr-code '(3 1 2 3 2 3 2) op3 op1 op2 (cregno crd) op2b
                                           (cregno crs2) 1);)
@@ -93,7 +93,7 @@
 
 ;; cj - Compressed Jump
 (defun cjump (imm funct3 op)
-  "RISC-V compressed 'C' modules instruction format for jump instructions that
+ "RISC-V compressed 'C' modules instruction format for jump instructions that
   take only immediate arguments"
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :cjump (ofst) ;(imm)
@@ -115,7 +115,7 @@
 
 ;; cb - Compressed Branch
 (defun cbranch (imm crs1 funct3 op)
-  "RISC-V compressed 'C' modules instruction format for branch instructions that
+ "RISC-V compressed 'C' modules instruction format for branch instructions that
   take a 'c' (x8..x15) register and an immediate as arguments"
   (let ((addr *pc*) (ofst (offset imm))); addr)))
     (delay :cbranch (ofst)
@@ -152,15 +152,15 @@
         ;;;; base 'I' modlule formats ;;;;
 
 (defun register (funct7 rs2 rs1 funct3 rd op)
-  "RISC-V base 'I' modules instruction format for instructions that
-   use three registers."
+ "RISC-V base 'I' modules instruction format for instructions that
+  use three registers."
     (build-expr-code '(7 5 5 3 5 7) funct7 (regno rs2) (regno rs1) funct3
                                     (regno rd) op));)
 
 
 (defun immed (imm12 rs1 funct3 rd op)
-  "RISC-V base 'I' modules instruction format for instructions that
-   use two registers and a 12-bit immediate 'imm12'."
+ "RISC-V base 'I' modules instruction format for instructions that
+  use two registers and a 12-bit immediate 'imm12'."
   (let ((addr *pc*))
   (delay :immed (imm12)
       (if (immp imm12 12)
@@ -179,8 +179,8 @@
 ;;     (error* "Immediate value out of range."))))
 
 (defun branch (imm rs2 rs1 funct3 op)
-  "RISC-V base 'I' modules instruction format for branch instructions that
-   compare rs1 and rs2 and jump to immedate (label) 'imm'."
+ "RISC-V base 'I' modules instruction format for branch instructions that
+  compare rs1 and rs2 and jump to immedate (label) 'imm'."
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :branch (ofst) ; (imm)
       ;; (let ((ofst (offset imm addr)))
@@ -207,8 +207,8 @@
 ;;            (regno rs1) funct3 (bits off 4 1) (bits off 11) funct7)))
 
 (defun jump (imm rd)
-  "RISC-V base 'I' modules instruction format for jump and link instructions that
-   store the return address in rd and jump to immediate (label) 'imm'."
+ "RISC-V base 'I' modules instruction format for jump and link instructions that
+  store the return address in rd and jump to immediate (label) 'imm'."
   (let ((addr *pc*) (ofst (offset imm)))
     (delay :jump (ofst) ;(imm)
       ;; (let ((ofst (offset imm addr)))
@@ -232,9 +232,9 @@
 ;;   (emit* '(1 10 1 8 5 7) imm20 imm10-1 imm11 imm19-12 rd op))
 
 (defun store (imm12 src base funct3)
-  "RISC-V base 'I' modules instruction format for instructions that store the contents
-   of the address created by adding the contents of the 'base' register
-   to the 12-bit immediate 'imm12' into the 'src' register."
+ "RISC-V base 'I' modules instruction format for instructions that store the contents
+  of the address created by adding the contents of the 'base' register
+  to the 12-bit immediate 'imm12' into the 'src' register."
   (let ((addr *pc*))
     (delay :store (imm12)
       (if (immp imm12 12)
@@ -246,7 +246,8 @@
 
 
 (defun upperimm (imm32 rd op)
-  "RISC-V base 'I' modules format for function that load 20-bit upper immediate in base 'I' modules.
+ "RISC-V base 'I' module format for function that load 20-bit upper immediate
+  into register rd.
   This funciton expects a 32-bit immediate that is a multiple of #x1000(4096)."
   (let ((addr *pc*))
     (delay :upperimm (imm32)
@@ -263,8 +264,8 @@
         ;;;; multiply formats ;;;;
 
 (defun muldiv (rs2 rs1 funct3 rd op)
-  "RISC-V format for multiplication and division instructions in
-   Integer multiplication and division 'M' modules"
+ "RISC-V format for multiplication and division instructions in
+  Integer multiplication and division 'M' modules"
     (build-expr-code '(7 5 5 3 5 7) 1 (regno rs2) (regno rs1) funct3
                                       (regno rd) op));)
 
@@ -272,7 +273,7 @@
         ;;;; Control and Status Register formats ;;;;
 
 (defun csrreg (csr rs1 funct3 rd)
-  "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
+ "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
   that use registers."
   (let ((addr *pc*))
     (delay :csr (csr)
@@ -283,7 +284,7 @@
 
 
 (defun csrimm (csr uimm5 funct3 rd)
-  "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
+ "RISC-V Control and Status Register 'ZiCSR' module format for CSR instructions
   that use 5-bit immediates."
   (let ((addr *pc*))
     (delay :csri (uimm5 csr)

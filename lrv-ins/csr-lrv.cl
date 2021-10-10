@@ -17,82 +17,82 @@
         ;;;; register instructions ;;;;
 
 (defun csrrw (rd csr rs1)
-  "(csrrw rd rs1 csr)
-   Reads contents of csr (zero extended) into rd and writes contents of rs1 to the csr.
-   If rd = x0 does not read and only writes to csr."
+ "(csrrw rd rs1 csr)
+  Reads contents of csr (zero extended) into rd and writes contents of rs1 to the csr.
+  If rd = x0 does not read and only writes to csr."
   (emit-vait (csrreg csr rs1 1 rd)))
 
 (defun csrrs (rd csr rs1)
-  "(csrrs rd rs1 csr)
-   Reads contents of csr (zero extended) into rd and sets the bits in the csr
-   that are set in rs1. If rs1 = x0 does not write and only reads from csr."
+ "(csrrs rd rs1 csr)
+  Reads contents of csr (zero extended) into rd and sets the bits in the csr
+  that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 2 rd)))
 
 (defun csrrc (rd csr rs1)
-  "(csrrc rd rs1 csr)
-   Reads contents of csr (zero extended) into rd and clears the bits in the csr
-   that are set in rs1. If rs1 = x0 does not write and only reads from csr."
+ "(csrrc rd rs1 csr)
+  Reads contents of csr (zero extended) into rd and clears the bits in the csr
+  that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 3 rd)))
 
         ;;;; immediate instructions ;;;;
 
 (defun csrrwi (rd csr uimm5)
-  "(csrrwi rd uimm5 csr)
-   Reads contents of csr into rd and writes zero extended immediate 'uimm5' to the csr.
-   If rd = x0 does not read and only writes to csr."
+ "(csrrwi rd uimm5 csr)
+  Reads contents of csr into rd and writes zero extended immediate 'uimm5' to the csr.
+  If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 5 rd)))
 
 (defun csrrsi (rd csr uimm5)
-  "(csrrsi rd uimm5 csr)
-   Reads contents of csr (zero extended) into rd and sets the bits in the csr
-   that are set in the immediate 'uimm5'.
-   If rd = x0 does not read and only writes to csr."
+ "(csrrsi rd uimm5 csr)
+  Reads contents of csr (zero extended) into rd and sets the bits in the csr
+  that are set in the immediate 'uimm5'.
+  If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 6 rd)))
 
 (defun csrrci (rd csr uimm5)
-  "(csrrci rd uimm5 csr)
-   Reads contents of csr (zero extended) into rd and clears the bits in the csr
-   that are set in the immediate 'uimm5'.
-   If rd = x0 does not read and only writes to csr."
+ "(csrrci rd uimm5 csr)
+  Reads contents of csr (zero extended) into rd and clears the bits in the csr
+  that are set in the immediate 'uimm5'.
+  If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 7 rd)))
 
         ;;;; derived register instructions ;;;;
 
 (defun csrr (rd csr)
-  "(csrr rd csr)
-    Reads contents of csr (zero extended) to rd"
+ "(csrr rd csr)
+  Reads contents of csr (zero extended) to rd"
   (csrrs rd csr 'x0))
 
 (defun csrw (csr rs)
  "(csrw rs1 csr)
-   Write contents of rs to csr"
+  Write contents of rs to csr"
   (csrrw 'x0 csr rs))
 
 (defun csrs (csr rs)
-  "(csrs rs1 csr)
-   Sets the bits in the csr that are set in rs"
+ "(csrs rs1 csr)
+  Sets the bits in the csr that are set in rs"
   (csrrs 'x0 csr rs))
 
 (defun csrc (csr rs)
-  "(csrc rs1 csr)
-   Clears the bits in the csr that are set in rs"
+ "(csrc rs1 csr)
+  Clears the bits in the csr that are set in rs"
   (csrrc 'x0 csr rs))
 
         ;;;;  derived immediate instructions  ;;;;
 
 (defun csrwi (csr uimm5)
  "(csrw uimm5 csr)
-   Write zero extended immediate 'uimm5' to csr"
+  Write zero extended immediate 'uimm5' to csr"
   (csrrwi 'x0 csr uimm5))
 
 (defun csrsi (csr uimm5)
-  "(csrsi uimm5 csr)
-   Sets the bits in the csr that are set in the immediate 'uimm5'"
+ "(csrsi uimm5 csr)
+  Sets the bits in the csr that are set in the immediate 'uimm5'"
   (csrrsi 'x0 csr uimm5))
 
 (defun csrci (csr uimm5)
-  "(csrci uimm5 csr)
-   Clears the bits in the csr that are set in the immediate 'uimm5'"
+ "(csrci uimm5 csr)
+  Clears the bits in the csr that are set in the immediate 'uimm5'"
   (csrrci 'x0 csr uimm5))
 
 
@@ -202,7 +202,7 @@
 
 (in-package :csrmm32)
 ;; format of a constant in this module:
-;;(defconstant <csr name> <csr number>   "<csr description> <csr access>")
+;;(defconstant <csr name> <csr number>  "<csr description> <csr access>")
 ;;
 ;; <access> is one of urw, uro, srw, sro, hrw, hro, mrw, mro
 
@@ -552,8 +552,8 @@
   (csrr reg timeh-csrΦ))
 
 (defun read-time (reg1 reg2 &optional (reg3 t1))
-  "Read the 64-bit time from the time csr 'csr-time'
-   leaving the results in reg1 and reg2"
+ "Read the 64-bit time from the time csr 'csr-time'
+  leaving the results in reg1 and reg2"
   (let ((read-time-label (gensym "READ-TIME-")))
     (set-label read-time-label)
     (rdtimeh reg1)

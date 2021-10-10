@@ -8,20 +8,28 @@
   (:nicknames :rdv)
   (:use :cl :rvasm :i-32-rv) ;; ?? not portable!!
   (:shadow not)
-  (:export #:nop4 #:seqz #:not #:neg
+  (:export #:nop4 #:seqz #:inc #:dec #:not #:neg
            #:seqz #:snez #:sltz #:sgtz
            #:bgt #:bgtu #:ble #:bleu #:beqz #:bnez
            #:bgez #:blez #:bltz #:bgtz
+           #:lfb #:lfj #:lfv
+           #:sfb #:sfj #:sfv
            #:call #:tail
-           #:inc #:dec
            ;; #:li
    ))
 
 
 (in-package "RVIDRV")
 
+;; TODO: Make portable
+;; (if (= *base-register-size* 32)
+;;     (use :i-32-rv)
+;;     (use :i-64-rv))
+
+
 (defun nop4 ()
-  "Advances one cycle and advances *pc* by 4"
+ "(nop4)
+  Advances one cycle and advances *pc* by 4"
   ;; (add 'x0 'x0 'x0))
   (i.addi 'x0 'x0 0))
 
@@ -29,87 +37,111 @@
         ;;;; Integer Computational Instructions ;;;;
 
 (defun seqz (rd rs1)
-  "Set rd to one if rs1 is equal to zero (otherwise nil)"
+ "(seqz rd rs1)
+  Set rd to one if rs1 is equal to zero (otherwise nil)"
   (i.sltiu rd rs1 0))
 
 (defun not (rd rs1)
- "Performs bitwise logical inversion of rs1 and store the result in rd"
+ "(not rd rs1)
+  Performs bitwise logical inversion of rs1 and store the result in rd"
   (i.xori rd rs1 -1))
 
 (defun inc (reg)
-  "increment REG by one"
+ "(inc reg)
+  increment REG by one"
   (i.addi reg reg 1))
 
+(defun binc (reg)
+ "(binc reg)
+  increment REG by 8"
+  (i.addi reg reg 8))
+
 (defun dec (reg)
-  "decrement REG by one"
+ "(dec reg)
+  decrement REG by one"
   (i.addi reg reg -1))
 
 
         ;;;; Register only Computational instructions ;;;;
 
 (defun neg (rd rs)
-  "Stores the negation of the contents of rs in rd"
+ "(neg rd rs)
+  Stores the negation of the contents of rs in rd"
   (i.sub rd 'x0 rs))
 
 (defun seqz (rd rs)
- "Set rd to one if rs is equal to zero"
+ "(seqz rd rs)
+  Set rd to one if rs is equal to zero"
   (i.sltiu rd rs 1))
 
 (defun snez (rd rs)
- "Set rd to one if rs is not equal to zero"
+ "(snez rd rs)
+  Set rd to one if rs is not equal to zero"
   (i.sltu rd 'x0 rs))
 
 (defun sltz (rd rs)
- "Set rd to one if rs is less than zero"
+ "(sltz rd rs)
+  Set rd to one if rs is less than zero"
   (i.slt rd rs 'x0))
 
 (defun sgtz (rd rs)
- "Set rd to one if rs is greater than zero"
+ "(sgtz rd rs)
+  Set rd to one if rs is greater than zero"
   (i.slt rd 'x0 rs))
 
         ;;;; Jumps and branches ;;;;
 
 (defun bgt (rs1 rs2 imm12)
-  "Branch to address described by immediate if rs1 is greater than rs2"
+ "(bgt rs1 rs2 imm12)
+  Branch to address described by immediate if rs1 is greater than rs2"
   (i.blt rs2 rs1 imm12))
 
 (defun bgtu (rs1 rs2 imm12)
-  "Branch to address described by immediate if rs1 is greater than rs2
+ "(bgtu rs1 rs2 imm12)
+  Branch to address described by immediate if rs1 is greater than rs2
    using unsigned comparison"
   (i.bltu rs2 rs1 imm12))
 
 (defun ble (rs1 rs2 imm12)
-  "Branch to address described by immediate if rs1 is less than or equal to rs2"
+ "(ble rs1 rs2 imm12)
+  Branch to address described by immediate if rs1 is less than or equal to rs2"
   (i.bge rs2 rs1 imm12))
 
 (defun bleu (rs1 rs2 imm12)
-  "Branch to address described by immediate if rs1 is greater than rs2
+ "(bleu rs1 rs2 imm12)
+  Branch to address described by immediate if rs1 is greater than rs2
    using unsigned comparison"
   (i.bgeu rs2 rs1 imm12))
 
 ;; moved out as Compressed instructions can be used
 (defun beqz (rs1 imm)
-  "Branch to address described by immediate if rs1 is equal to 0"
+ "(beqz rs1 imm)
+  Branch to address described by immediate if rs1 is equal to 0"
   (i.beq rs1 'x0 imm))
 
 (defun bnez (rs1 imm)
-  "Branch to address described by immediate if rs1 not equal to 0"
+ "(bnez rs1 imm)
+  Branch to address described by immediate if rs1 not equal to 0"
   (i.bne rs1 'x0 imm))
 
 (defun bgez (rs1 imm12)
-  "Branch to address described by immediate if rs1 greater than or equal to 0"
+ "(bgez rs1 imm12)
+  Branch to address described by immediate if rs1 greater than or equal to 0"
   (i.bge rs1 'x0 imm12))
 
 (defun blez (rs1 imm12)
-  "Branch to address described by immediate if rs1 less than or equal to 0"
+ "(blez rs1 imm12)
+  Branch to address described by immediate if rs1 less than or equal to 0"
   (i.bge 'x0 rs1 imm12))
 
 (defun bltz (rs1 imm12)
-  "Branch to address described by immediate if rs1 not less than 0"
+ "(bltz rs1 imm12)
+  Branch to address described by immediate if rs1 not less than 0"
   (i.blt rs1 'x0 imm12))
 
 (defun bgtz (rs1 imm12)
-  "Branch to address described by immediate if rs1 greater than 0"
+ "(bgtz rs1 imm12)
+  Branch to address described by immediate if rs1 greater than 0"
   (i.blt 'x0 rs1 imm12))
 
 
@@ -255,7 +287,8 @@
 
 ;; TODO: is it possible to add comprsessed instructions? needs test c.jal offset 12?
 (defun call (imm)
-   "Call far away subroutine (pseudoinstruction for auipc x1 and jalr x1)"
+ "(call imm)
+  Call far away subroutine (pseudoinstruction for auipc x1 and jalr x1)"
   (let* ((addr *pc*)
          (ofst (offset imm))
          (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
@@ -285,7 +318,8 @@
 
 ;; TODO: is it possible to add comprsessed instructions? needs test
 (defun tail (imm)
-  "Tail call far away subroutine
+ "(tail imm)
+  Tail call far away subroutine
    (pseudoinstruction for  (auipc x6) and (jalr x0 x6))"
   (let* ((addr *pc*)
          (ofst (offset imm))
@@ -314,5 +348,3 @@
         (build-expr-code '(12 5 3 5 7) imm12 (regno 'x6) 0 (regno 'x0) #x67)))
     )
   )
-
-
