@@ -42,13 +42,13 @@
             ))
 
 
-;; (defpackage "RVASM-UTILS"
-;;   (:documentation "Procedures that expand on the basic rvasm package")
-;;   (:nicknames :rvutl)
-;;   (:use :cl :rvasm)
-;;   (:export
+(defpackage "RVASM-UTILS"
+  (:documentation "Procedures that expand on the basic rvasm package")
+  (:nicknames :rvutl)
+  (:use :cl :rvasm)
+  (:export
 
-;;    ))
+   ))
 
 
 ;; (in-package "RVASM")
