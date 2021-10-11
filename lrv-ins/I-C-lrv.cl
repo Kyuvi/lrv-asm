@@ -119,46 +119,6 @@
   (i.auipc rd imm32)
   )
 
-(defun la (crd cimm)
- "(la crd cimm)
-  Load address: Load (pc relative) address into rv
-  assumes use of #h or #y read macros to avoid twos complement errors.
-  Uses a compressed instruction if...
-  crd ≠ x0 and 0 ≠ ofst <= 6 bits :c.li.
-  crd = crs1 = x2 and 0 ≠ ofst <= 10 bit multiple of 16 :c.addi16sp.
-  crd = x2 and 0 ≠ ofst <= 10 bit multiple of 4 :c.addi4spn."
-  (let ((ofst (offset cimm)))
-    (cond ((cl:and (integerp cimm) (immp ofst 6) (cl:not (zerop ofst)) )
-           (c.li crd ofst))
-          ((cl:and (intergerp cimm) (immp ofst 10) (zerop (logand ofst #xf))
-                   (= (regno crd) 2) (cl:not (zerop ofst)))
-           (c.addi16sp crd ofst))
-          ((cl:and (intergerp cimm) (uimmp ofst 10) (zerop (logand ofst #x3))
-                   (= (regno crd) 2) (cl:not (zerop ofst)))
-           (c.addi4sp crd ofst))
-          ((cl:and (integerp cimm) (immp ofst 12))
-           (i.addi crd crd ofst))
-          (t (let ((addr *pc*)
-                   (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
-                   (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
-               (emit-vait
-                (delay :la (ofst imm12 imm20)
-                  (if (cl:not (immp ofst 32))
-                      (rv-error "la: Upper Immediate value out of range." addr)
-                      (build-expr-code '(20 5 7)
-                                       (bits (if (= (logand imm12 #x800) #x800)
-                                                 ;; test for addi overflow/sign extension??
-                                                 (+ imm20 #x1000) imm20 )
-                                             ;;simulate overflow/sign extension
-                                             31 12) (regno crd) #x17))))
-               ;; (addi crd crd imm12)) ;; does not work because of (immp imm12 12) test
-               ;; need to "force" it to accept #x800 as #x-800
-               ;; TODO: is it possible to add comprsessed instructions?
-               (emit-vait
-                (delay :addli (imm12)
-                  (build-expr-code '(12 5 3 5 7) imm12 (regno crd) 0 (regno crd) #x13))))
-             ))
-    ))
 
 ;; load immediate (derived)
 ;; This loads an immediate into rd, the bit imm[11] is added to imm20 to conteract
@@ -602,33 +562,6 @@
 
 
 ;;
-  (defun lfv (crd cimm)
-  (let ((ofst (offset cimm)))
-    (cond ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff83))
-                   (cregp crd) (cregp crs1))
-           (c.lv crd crd ofst))
-          ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff03))
-                   (cl:not (zerop (regno crd))) (= (regno crs1) 2))
-           (c.lvsp crd ofst))
-          ((cl:and (ingtegerp cimm) (immp ofst 12))
-           (i.lv crd crd ofst))
-          (t (let ((addr *pc*)  ; (ofst (offset imm))
-                (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
-                (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
-            (emit-vait
-         (delay :lauipcv (ofst imm12 imm20)
-           (if (cl:not (immp ofst 32))
-                (rv-error "lfv: Upper Immediate value out of range." addr)
-                (build-expr-code '(20 5 7)
-                                 (bits (if (= (logand imm12 #x800) #x800)
-                                     ;; test for addi overflow/sign extension??
-                                            (+ imm20 #x1000) imm20 )
-                                             ;;simulate overflow/sign extension
-                                           31 12) (regno rd) #x17)))))
-        (emit-vait
-         (delay :lfv (imm12)
-           (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 2 (regno rd) #x3)))
-        ))))
 
 (defun lbu (rd rs1 imm12)
  "(lbu rd rs1 imm12)
@@ -680,34 +613,6 @@
         (t (i.sv crs crb cimm12)))
       );) ;cc
 
-(defun sfv (crs crb cimm)
-  (let ((ofst (offset cimm)))
-    (cond ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff83))
-                   (cregp crs) (cregp crb))
-           (c.sv crs crb ofst))
-          ((cl:and (ingtegerp cimm) (zerop (logand ofst #xff03))
-                   (= (regno crb) 2))
-           (c.svsp crs crb ofst))
-          ((cl:and (ingtegerp cimm) (immp ofst 12))
-           (i.sv rs rb ofst))
-          (t (let ((addr *pc*)  ; (ofst (offset cimm))
-                   (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
-                   (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
-               (emit-vait
-                (delay :sauipcv (ofst imm12 imm20)
-                  (if (cl:not (immp ofst 32))
-                      (rv-error "sfv: Upper Immediate value out of range." addr)
-                      (build-expr-code '(20 5 7)
-                                       (bits (if (= (logand imm12 #x800) #x800)
-                                                 ;; test for addi overflow/sign extension??
-                                                 (+ imm20 #x1000) imm20 )
-                                             ;;simulate overflow/sign extension
-                                             31 12) (regno rd) #x17))))
-               (emit-vait
-                (delay :sfv (imm12)
-                  (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
-                                   2 (bits imm12 4 0) #x23)))
-               )))))
 
         ;;;; Miscellaneous Instructions ;;;;
 
