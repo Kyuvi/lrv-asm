@@ -166,21 +166,40 @@
 (defun li (rd cimm)
  "(li rd cimm)
   Load Immediate: Load signed immediate into rd.
-  assumes use of #h or #y read macros to twos complement errors.
+  assumes use of #h or #y read macros to avoid twos complement errors.
   Uses a compressed instruction if...
-  crd ≠ x0 = crs1 and 0 ≠ cimm32 <= 6 bits :c.li.
+  crd ≠ x0 and 0 ≠ cimm32 <= 6 bits :c.li.
   crd = crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 16 :c.addi16sp.
   crd = x2 and 0 ≠ imm <= 10 bit multiple of 4 :c.addi4spn."
   (cond ((cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm)) ) ;; (cregp rd))
          (c.li rd cimm))
-        ((cl:and (intergerp cimm) (immp ofst 10) (zerop (logand ofst #xf))
+        ((cl:and (intergerp cimm) (immp cimm 10) (zerop (logand cimm #xf))
+                 (= (regno crd) 2) (cl:not (zerop cimm)))
+         (c.addi16sp crd cimm))
+        ((cl:and (intergerp cimm) (uimmp cimm 10) (zerop (logand cimm #x3))
                  (= (regno crd) 2) (cl:not (zerop ofst)))
-         (c.addi16sp crd ofst))
-        ((cl:and (intergerp cimm) (immp ofst 10) (zerop (logand ofst #x3))
-                 (= (regno crd) 2) (cl:not (zerop ofst)))
-         (c.addi4sp crd ofst))
-        ((cl:and (integerp cimm) (immp ofst 12))
-         (i.addi crd crd ofst))
+         (c.addi4sp crd cimm))
+        ((cl:and (integerp cimm) (immp cimm 12))
+         (i.addi crd crd cimm))
+        ((cl:and (integerp cimm) (immp cimm 18) (zerop (lognad cimm #xfff))
+                 (not (zerop (regno rd))) (not (= (regno rd 2))))
+         (c.lui rd cimm))
+        ((cl:and (integerp cimm) (immp cimm 18)
+                 (not (zerop (regno rd))) (not (= (regno rd 2))))
+         (let* ((imm12 (logand cimm #x00000fff))
+                (imm18 (logand cimm #xfffff000))
+                (imm18c (if (= (logand imm12 #x800) #x800)
+                             (+ imm18 #x1000) imm18)))
+           (build-expr-code '(3 1 5 5 2) 3 (bits imm18c 17) (regno rd)
+                            (bits imm18c 16 12) 1))
+           ;; (c.lui rd imm18c)
+           (if (cl:and (immp imm12 6)) ;; TODO: TEST!!
+               (emit-jait
+                (build-expr-code '(3 1 5 5 2) op1 (bits imm12 5) (regno rd)
+                                 (bits imm12 4 0) op2))
+               (emit-vait
+                (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))
+           )
   ;; (delay :li (cimm)
         (t (let ((addr *pc*)
                  (imm12 (delay :imm12 (cimm) (logand cimm #x00000fff)))
