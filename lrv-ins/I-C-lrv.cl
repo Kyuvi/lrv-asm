@@ -78,13 +78,22 @@
     ((cl:and (integerp cimm12) (immp cimm12 10) (zerop (logand cimm12 #xf)) ;; #xc0f
              (eq crd crs1) (= (regno crd) 2) (cl:not (zerop cimm12)))
      (c.addi16sp crd cimm12))
-    ((cl:and (integerp cimm12) (immp cimm12 10) (zerop (logand cimm12 #x3)) ;; #xc03
+    ((cl:and (integerp cimm12) (uimmp cimm12 10) (zerop (logand cimm12 #x3)) ;; #xc03
              (eq crd crs1) (cregp crd)  (cl:not (zerop cimm12)))
      (c.addi4spn crd cimm12))
     (t (i.addi crd crs1 cimm12)
       ))
 ) ;cccc
 
+(defun inc (reg &optional (imm12 1))
+ "(inc reg &optional (imm12 1))
+  increment REG by one or imm12 if given"
+  (addi reg reg imm12))
+
+(defun dec (reg &optional (imm12 1))
+ "(dec reg &optional (imm12 1))
+  decrement REG by by one or imm12 if given"
+  (addi reg reg (- imm12)))
 
 ;; Load Upper Immediate
 (defun lui (crd cimm32)
