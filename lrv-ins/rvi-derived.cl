@@ -46,20 +46,20 @@
   Performs bitwise logical inversion of rs1 and store the result in rd"
   (i.xori rd rs1 -1))
 
-(defun inc (reg)
- "(inc reg)
-  increment REG by one"
-  (i.addi reg reg 1))
+(defun inc (reg &optional (imm12 1))
+ "(inc reg &optional (imm12 1))
+  increment REG by one or imm12 if given"
+  (i.addi reg reg imm12))
 
 (defun binc (reg)
  "(binc reg)
   increment REG by 8"
   (i.addi reg reg 8))
 
-(defun dec (reg)
- "(dec reg)
-  decrement REG by one"
-  (i.addi reg reg -1))
+(defun dec (reg &optional (imm12 1))
+ "(dec reg &optional (imm12 1))
+  decrement REG by by one or imm12 if given"
+  (i.addi reg reg (- imm12))
 
 
         ;;;; Register only Computational instructions ;;;;
