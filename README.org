@@ -6,11 +6,11 @@ The main repository is on [[https://codeberg.org/Kyuvi/lrv-asm.git][Codeberg]]. 
 * Description
 A crude but functional implementation of a dynamic [[https://en.wikipedia.org/wiki/Riscv][RISC-V]] assembler in [[https://en.wikipedia.org/wiki/Common_Lisp][Common Lisp]], Still in a pre-alpha state, pretty much everything is liable to change. Written and tested in [[https://gitlab.com/embeddable-common-lisp/ecl/][Embeddable Common Lisp]] and output code has only been created for and tested on the [[https://www.seeedstudio.com/Sipeed-Longan-Nano-RISC-V-GD32VF103CBT6-Development-Board-p-4205.html][Longan nano development board]]. I have tried to make it portable but I have not tested it properly on other Common Lisp implementations.
 
-It currently supports only the 32-bit I and M modules plus the base instructions from the C module and the CSR module including the (proposed?) 32-bit csr memory map, but has been designed to be extended to support other modules and both 64-bit and 128-bit instruction sets as well.
+It currently supports only the 32-bit I and M modules plus the base instructions from the C module and the CSR module including the (proposed?) 32-bit CSR memory map, but has been designed to be extended to support other modules and both 64-bit and 128-bit instruction sets as well.
 
-These are actually the basic modules/packages to be used to build up an assembler for the instruction set of a chip when needed.
+These are actually the basic modules/packages to be used to build up an assembler for the instruction set of a processor when needed.
 
-It is not optimized for using compressed instructions, and when using the "I-C-32-RV" module, unless compressed instructions are explicitly used, the compressed instructions are only used for resolved immediates (labels) i.e. compressed instructions will only be used for backward branches if possible.
+It is not optimized for using compressed instructions, and when using the "I-C-32-RV" module, unless compressed instructions are explicitly used, the compressed instructions are only used for resolved immediates (labels), i.e. compressed instructions will only be used for backward branches if possible.
 
 * Syntax and Notation
 ** Assembly Related
@@ -35,14 +35,14 @@ I personally find it easier to think like this about (modern) assembly code.
 ** Common Lisp Related
 I shadowed "and", "or", (in the I-C-32-lrv module), "not" (in the rvi-derived module)  and rem (in the Multiplication module) so one can either shadow them when importing or use cl:and, cl:or etc in code.
 
-Two new reader macros have been added namely, "#h" and "#y" for Twos complement hexidecimal and binary numbers respectively. They (should) act like hexidecimal and binary notations in other assemblers using the most significant bit of the register-length (i.e. bits 31 or 63) as the sign bit and can also be negated (i.e. #h-num = (- (- num) = num ). This should avoid some issues with register-length immediate loads i.e load immediate (li rd imm32), load address (la rd imm32) etc.
+Two new reader macros have been added namely, "#h" and "#y" for Twos complement hexadecimal and binary numbers respectively. They (should) act like hexadecimal and binary notations in other assemblers using the most significant bit of the register-length (i.e. bits 31 or 63) as the sign bit and can also be negated (i.e. #h-num = (- (- num) = num ). This should avoid some issues with register-length immediate loads i.e load immediate (li rd imm32), load address (la rd imm32) etc.
 
 While in Common Lisp the notation =+constant+= is sometimes used for constants, I just added a phi symbol to the end to represent constants i.e. =constantΦ=, it turns out there are a lot of constants in the RISC-V ISA (see ./lrv-ins/csr-lrv.cl).
 
 * Installation and Use
 This depends on having (Embeddable) Common lisp installed on the computer already.
 
-Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF, so the files need to be loaded into a lisp environment in order and a new package made using the right modules to target a particular chip.
+Due to time, personal and design reasons (the design is nowhere near complete as only a fraction of the modules have been finished and I am still learning about the RISC-V ISA and how it is used in implementations), this has not been packaged with ASDF, so the files need to be loaded into a lisp environment in order and a new package made using the right modules to target a particular processor.
 
 A simple example targeting the longan development board from a file in the top level i.e. the same level as this README.org. A position adjusted version of this example can be found in the examples folder.
 -----
@@ -73,7 +73,7 @@ A simple example targeting the longan development board from a file in the top l
 
 (in-package :longan)
 
-;; set up chip specific environment with code starting at address 0
+;; set up processor specific environment with code starting at address 0
 
 (defparameter *env* (make-instance 'basic-env :address 0))
 
@@ -81,7 +81,7 @@ A simple example targeting the longan development board from a file in the top l
 
 
 ;; This can then be used as the actual assembler
-;; for the GD32V-IMAC chip on the longan developement board.
+;; for the bumblebee core in the GD32V-IMAC SOC  on the longan development board.
 
 ;; =code starts here=
 (addi 'x1 'x0 #h20)  ;; load 20 into register x1
@@ -93,19 +93,19 @@ A simple example targeting the longan development board from a file in the top l
 #+END_SRC
 -----
 
-# This can then be used as the actual assembler for the GD32-IMAC chip on the longan developement board.
+# This can then be used as the actual assembler for the bumblebee core in the  GD32-IMAC SOC on the longan development board.
 
 * Plans and Goals
 ** Goals
 - Simple clear code using the expressiveness of (common) lisp.
 - Modular code to mirror the modularity of the RISC-V instruction set Architecture.
 - Concise and fast machine code output.
-- Modularity.
+ # - Modularity.
 - Upload output file to development board from lisp environment(REPL) on Linux, iOS and Windows.
 - Simplified/Minimalised assembly syntax (no parenthesis or quotes)
 - Include remaining finalized RISC-V instruction modules.
 - 64-bit.
-- Automate building an assembler for a chip based on specified modules
+- Automate building an assembler for a specific processor based on specified modules
 
 ** Long term Goals
 - 128-bit.
@@ -118,12 +118,12 @@ A simple example targeting the longan development board from a file in the top l
  
 * TODO
 - [ ] Edit/Add readtable to accept assembly syntax without parenthesis, quotes, set-label and label (while still allowing parenthesis for complex expressions?).
-- [ ] Add built in DFU (Device Firmware Ugrade) utility (using libusb?) that can be called from the REPL.
+- [ ] Add built in DFU (Device Firmware Upgrade) utility (using libusb?) that can be called from the REPL.
 - [ ] Optimize compiler (lrv-env.cl) for optional compressed instruction set automatically (and clearly).
-- [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or seperate file.
+- [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or separate file.
 - [ ] Include all finalized RISC-V modules.
 - [ ] Include 64-bit instruction set in modules.
-- [ ] Automate building an assembler for a chip based on specified modules.
+- [ ] Automate building an assembler for a specific processor based on specified modules.
 - [ ] Include 128-bit instruction set in modules.
 
 * Acknowledgments
