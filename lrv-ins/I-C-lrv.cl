@@ -8,7 +8,8 @@
   (:shadow or and rem)
   ;; (:shadowing-import-from :cl not)
   (:export #:nop #:mv #:jr #:jc #:ret
-           #:addi #:lui #:li #:liu #:auipc #:slti #:sltiu #:xori #:ori #:andi
+           #:addi #:inc #:dec
+           #:lui #:li #:liu #:auipc #:slti #:sltiu #:xori #:ori #:andi
            #:slli #:srli #:srai
            #:add #:sub #:sll #:slt #:sltu #:xor #:srl #:sra #:or #:and
            #:j #:jal #:jalr #:beq #:bne #:blt #:bge #:bltu #:bgeu
@@ -20,10 +21,9 @@
 (in-package :ic32)
 
 ;; TODO: Make portable
-;; (if (= *base-register-size* 32)
-;;     (use :i-32-rv)
-;;     (use :i-64-rv))
-;;
+;; (use (if (= *base-register-size* 32)
+;;          :i-32-rv :i-64-rv))
+
 ;; TODO: Move i.x only procedures to rvidrv
 
         ;;;; Compressed Only Instructions ;;;;
