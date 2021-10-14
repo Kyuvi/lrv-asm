@@ -3,7 +3,7 @@
 (defpackage "A-32-RV"
   (:nicknames :a32)
   (:use :cl :rvasm)
-  (:export #:lr.v #:sc.v #:amo.vap.w #:amoadd.v #:amoxor.v #:amoand.v #:amoor.v
+  (:export #:lr.v #:sc.v #:amoawap.v #:amoadd.v #:amoxor.v #:amoand.v #:amoor.v
            #:amomin.v #:amomax.v #:amominu.v #:amomaxu.v  ))
 
 (in-package "A-32-RV")
@@ -17,7 +17,7 @@
 
 )
 
-(defun amo.vap.w (rd rs1 rs2 aq rl )
+(defun amoswap.v (rd rs1 rs2 aq rl )
 
 )
 

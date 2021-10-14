@@ -10,7 +10,7 @@
            #:sfence.vma
    ))
 
-
+(in-package :rv-privileged)
 
 
 ;; (defun ecall ()

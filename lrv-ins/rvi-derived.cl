@@ -60,7 +60,7 @@
 (defun dec (reg &optional (imm12 1))
  "(dec reg &optional (imm12 1))
   decrement REG by by one or imm12 if given"
-  (i.addi reg reg (- imm12))
+  (i.addi reg reg (- imm12)))
 
 
         ;;;; Register only Computational instructions ;;;;
