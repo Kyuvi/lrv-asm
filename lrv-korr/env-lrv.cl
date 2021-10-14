@@ -17,7 +17,7 @@
 
 ;; As most assembly code contains labels to jump to this class provides
 ;; a (hash) lookup table of the labels/symbols in the code and hopefully
-;; addresses they point to
+;; the addresses they point to
 
 (defclass symbol-table ()
   ((symbol-table :reader env-symbol-table
@@ -42,6 +42,8 @@
 
 (defstruct promise name fun (value *lazy-marker*))
 
+;; Create a new condition class that can temporarily be stored in place of a
+;; label address if the address can not be resolved yet
 (define-condition resolvable-condition (condition)
   ((state :initform nil :initarg :state :accessor state))
   (:report (lambda (condition stream)
@@ -65,15 +67,15 @@
 
 ;; Returns the promise-value of the "promise" if it exists,
 ;; or sets the promise-value of the promise to the result of executing the
-;; promise-fun of the promise. if not executing promise-fun returns a resolvable condition,
-;;then set the state of the resolvable condition,error or signal the condition
-;;and return the promise
+;; promise-fun of the promise. if not executing promise-fun returns a
+;; resolvable condition, then set the state of the resolvable condition
+;; to error or signal the condition and return the promise
 (defmethod force ((p promise) &optional (error-p t))
 " Returns the promise-value of the 'promise' if it exists,
   or sets the promise-value of the promise to the result of executing
   the promise-fun of the promise. if not, executing promise-fun
-  returns a resolvable condition, then set the state of the
-  resolvable condition, error or signal the condition and return the promise"
+  returns a resolvable condition, then sets the state of the
+  resolvable condition to error or signal the condition and return the promise"
   (if (not (eq (promise-value p) *lazy-marker*))
       (promise-value p)
       (handler-case (set-promise-value p (funcall (promise-fun p)))
