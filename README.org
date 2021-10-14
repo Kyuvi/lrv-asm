@@ -67,7 +67,8 @@ A simple example targeting the longan development board from a file in the top l
 
 (defpackage "LONGAN"
   (:use :cl :rvasm :clrv :c32 :i32 :ic32 :rdv :m32 :csr :csr32)
-  (:shadowing-import-from :ic32 and or beqz bnez ) ;; beqz & bnez also defined in rvdrv.
+  ;; beqz, bnez inc and dec  also defined in rvdrv.
+  (:shadowing-import-from :ic32 and or beqz bnez inc dec )
   (:shadowing-import-from :m32 rem )
   (:shadowing-import-from :rdv not ))
 
