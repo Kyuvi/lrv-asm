@@ -10,6 +10,7 @@
    #:symbol-append #:keyword-append
    ))
 
+(in-package "CLRV-UTILS")
 
 (defmacro export-mutiple-constants (&rest constant-lists)
   "(export-mutiple-constants (&rest constant-lists))
