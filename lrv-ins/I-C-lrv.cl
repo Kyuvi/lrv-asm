@@ -79,7 +79,8 @@
              (eq crd crs1) (= (regno crd) 2) (cl:not (zerop cimm12)))
      (c.addi16sp cimm12))
     ((cl:and (integerp cimm12) (uimmp cimm12 10) (zerop (logand cimm12 #x3)) ;; #xc03
-             (eq crd crs1) (cregp crd)  (cl:not (zerop cimm12)))
+             ;; (eq crd crs1) (cregp crd)  (cl:not (zerop cimm12)))
+              (cregp crd) (= (regno crs1) 2)  (cl:not (zerop cimm12)))
      (c.addi4spn crd cimm12))
     (t (i.addi crd crs1 cimm12)
       ))

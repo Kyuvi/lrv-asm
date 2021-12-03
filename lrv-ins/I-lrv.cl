@@ -41,12 +41,14 @@
   )
 
 ;; Add Upper Immediate to PC
-(defun i.auipc (rd imm32)
+(defun i.auipc (rd imm)
  "(i.auipc rd imm32)
   Add Upper Immediate to PC: Add the immediate
   (which should be a multiple of 4096 or #x1000) to the program counter
   and load the result into the register."
-  (emit-vait (upperimm imm32 rd #x17))
+  (emit-vait
+   (let ((ofst (offset imm)))
+     (upperimm ofst rd #x17)))
 
   ;; (if (immp imm20 20)
   ;;     (emit-vait (build-expr-code '(20 5 7) (bits imm20 19 0) (regno rd) #x37))
