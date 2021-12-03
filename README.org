@@ -1,5 +1,5 @@
 #+TITLE: (Common) Lisp RISC-V assembler (lrv-asm)
-#+STARTUP: contents
+# #+STARTUP: content
 
 The main repository is on [[https://codeberg.org/Kyuvi/lrv-asm.git][Codeberg]]. if you are viewing this anywhere else, it is just a mirror. Please use the [[https://codeberg.org/Kyuvi/lrv-asm.git][Codeberg]] repository for pull requests and issues. Thank you.
 
@@ -35,7 +35,7 @@ I personally find it easier to think like this about (modern) assembly code.
 ** Common Lisp Related
 I shadowed "and", "or", (in the I-C-32-lrv module), "not" (in the rvi-derived module)  and rem (in the Multiplication module) so one can either shadow them when importing or use cl:and, cl:or etc in code.
 
-Two new reader macros have been added namely, "#h" and "#y" for Twos complement hexadecimal and binary numbers respectively. They (should) act like hexadecimal and binary notations in other assemblers using the most significant bit of the register-length (i.e. bits 31 or 63) as the sign bit and can also be negated (i.e. #h-num = (- (- num) = num ). This should avoid some issues with register-length immediate loads i.e load immediate (li rd imm32), load address (la rd imm32) etc.
+Two new reader macros have been added namely, "#h" and "#y" for Twos complement hexadecimal and binary numbers respectively. They (should) act like hexadecimal and binary notations in other assemblers using the most significant bit of the register-length (i.e. bits 31 or 63) as the sign bit and can also be negated (i.e. #h-num = (- num), so #h-ffffffff = 1). This should avoid some issues with register-length immediate loads, i.e load immediate (li rd imm32), load address (la rd imm32) etc, and also help with optimisation.
 
 While in Common Lisp the notation =+constant+= is sometimes used for constants, I just added a phi symbol to the end to represent constants i.e. =constantΦ=, it turns out there are a lot of constants in the RISC-V ISA (see ./lrv-ins/csr-lrv.cl).
 
@@ -115,13 +115,13 @@ A simple example targeting the longan development board from a file in the top l
 
 ** Non Goals
 - Speed of assembly/compiling process.
-- Targeting Multiple Instruction Set Architectures (though lrv-korr.cl could be used for this with some expansion).
+- Targeting Multiple Instruction Set Architectures (though env-lrv.cl could be used for this with some expansion).
  
 * TODO
 - [ ] Edit/Add readtable to accept assembly syntax without parenthesis, quotes, set-label and label (while still allowing parenthesis for complex expressions?).
 - [ ] Add built in DFU (Device Firmware Upgrade) utility (using libusb?) that can be called from the REPL.
-- [ ] Optimize compiler (lrv-env.cl) for optional compressed instruction set automatically (and clearly).
-- [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (lrv-kone.cl) or separate file.
+- [ ] Optimize compiler (env-lrv.cl) for optional compressed instruction set use automatically (and clearly).
+- [ ] Include in and Optimize for optional floating point instruction sets automatically (and clearly) in Engine (kone-lrv.cl) or separate file.
 - [ ] Include all finalized RISC-V modules.
 - [ ] Include 64-bit instruction set in modules.
 - [ ] Automate building an assembler for a specific processor based on specified modules.
