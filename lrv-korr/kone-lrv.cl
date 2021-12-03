@@ -37,7 +37,7 @@
 ;; (defun regnos (sym)
 ;;   (cdr (assoc sym *reg-assoc*)))
 
-(defun regno (sym)
+(defun regno (reg)
  "Extract register number
   x0-31 = Normal Register Names
   zero = x0
@@ -56,38 +56,46 @@
   t3-6 = Temporaries = x28-31
   r0-r31 = Local Register Names
 "
+  (typecase reg
+    ;; ((unsigned-byte 5) reg)
+    (rvreg::rv-base-reg (rvreg::get-reg-val reg))
+    (symbol
   ;; Note: the first (non calculated) register names need to be exported
-  (case sym (zero 0) ; zero register
-            (ra 1) ; return address
-            (sp 2) ; stack pointer
-            (gp 3) ; global pointer - points to start of static region
-            (tp 4) ; thread pointer
-            (s0 8) ; saved register
-            (fp 8) ; frame pointer
-            (s1 9) ; saved register
-    (t (let* ((s (string sym))
-              (c (char s 0))
-              (n (read-from-string (subseq s 1))))
-         (case c (#\X (typecase n
-                        ((integer 0 31) n)
-                        (t (rv-error "An x register needs to be between 0 and 31"))))
-                 (#\A (typecase n
-                        ((integer 0 7) (+ n 10))
-                        (t (rv-error "An a register needs to be between 0 and 7"))))
-                 (#\S (typecase n
-                        ((integer 2 11) (+ n 16))
-                        (t (rv-error "An s register needs to be between 0 and 11"))))
-                 (#\T (typecase n
-                        ((integer 0 6) (if (<= n 2) (+ n 5) (+ n 25)))
-                        (t (rv-error "A t register needs to be between 0 and 6"))))
-                 (#\R (typecase n
-                        ((integer 0 31) n)
-                        (t (rv-error "A r register needs to be between 0 and 31"))))
-                 (t (rv-error "Unknown risc-v register"))
-                 )))))
+     (case reg (zero 0) ; zero register
+           (ra 1) ; return address
+           (sp 2) ; stack pointer
+           (gp 3) ; global pointer - points to start of static region
+           (tp 4) ; thread pointer
+           (s0 8) ; saved register
+           (fp 8) ; frame pointer
+           (s1 9) ; saved register
+           (t (let* ((s (string reg))
+                     (c (char s 0))
+                     (n (read-from-string (subseq s 1))))
+                (case c (#\X (typecase n
+                               ((integer 0 31) n)
+                               (t (rv-error "An x register needs to be between 0 and 31"))))
+                      (#\A (typecase n
+                             ((integer 0 7) (+ n 10))
+                             (t (rv-error "An a register needs to be between 0 and 7"))))
+                      (#\S (typecase n
+                             ((integer 2 11) (+ n 16))
+                             (t (rv-error "An s register needs to be between 0 and 11"))))
+                      (#\T (typecase n
+                             ((integer 0 6) (if (<= n 2) (+ n 5) (+ n 25)))
+                             (t (rv-error "A t register needs to be between 0 and 6"))))
+                      (#\R (typecase n
+                             ((integer 0 31) n)
+                             (t (rv-error "A r register needs to be between 0 and 31"))))
+                      (t (rv-error "Unknown risc-v register"))
+                      )))))
+    (t (rv-error "Unknown risc-v register"))
+))
 
 ; Short 3-bit register
-(defun cregp (sym) (<= 8 (regno sym) 15))
+(defun cregp (sym)
+  (<= 8 (regno sym) 15))
+  ;; (typep sym 'rv-cb-reg))
 
 (defun cregno (sym) (if (cregp sym)
                         (logand (regno sym) #x7)
@@ -157,26 +165,26 @@
 
 
         ;;;; miscellenous utilites ;;;;
-(defun lnot-imm (x imm)
-  "Get the 'imm' bits of the logical not of a number 'x'"
-  (bits (lognot x) (- imm 1) 0))
+;; (defun lnot-imm (x imm)
+;;   "Get the 'imm' bits of the logical not of a number 'x'"
+;;   (bits (lognot x) (- imm 1) 0))
 
-(defun lnotb (x)
-  "logical not byte
-   The lSB byte value of the logical not of 'x'"
-  (lnot-imm x 8))
+;; (defun lnotb (x)
+;;   "logical not byte
+;;    The lSB byte value of the logical not of 'x'"
+;;   (lnot-imm x 8))
 
-(defun lnotj (x)
-  "logical not jyte
-   The lSB jyte value of the logical not of 'x'"
-  (lnot-imm x 16))
+;; (defun lnotj (x)
+;;   "logical not jyte
+;;    The lSB jyte value of the logical not of 'x'"
+;;   (lnot-imm x 16))
 
-(defun lnotv (x)
-  "logical not vyte
-   The lSB vyte value of the logical not of 'x'"
-  (lnot-imm x 32))
+;; (defun lnotv (x)
+;;   "logical not vyte
+;;    The lSB vyte value of the logical not of 'x'"
+;;   (lnot-imm x 32))
 
-(defun lnotz (x)
-  "logical not zyte
-   The lSB zyte value of the logical not of 'x'"
-  (lnot-imm x 64))
+;; (defun lnotz (x)
+;;   "logical not zyte
+;;    The lSB zyte value of the logical not of 'x'"
+;;   (lnot-imm x 64))
