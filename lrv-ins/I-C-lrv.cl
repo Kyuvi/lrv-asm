@@ -4,7 +4,7 @@
 (defpackage "I-C-32-RV"
   (:documentation "32-bit instructions that use both I and C risc-v modules" )
   (:nicknames :ic32)
-  (:use :cl :rvasm :i-32-rv :c-32-rv)
+  (:use :cl :rvreg :rvasm :i-32-rv :c-32-rv)
   (:shadow or and rem)
   ;; (:shadowing-import-from :cl not)
   (:export #:nop #:mv #:jr #:jc #:ret

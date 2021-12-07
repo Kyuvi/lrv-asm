@@ -6,7 +6,7 @@
   (:documentation "Risc-V functions that are register size agnostic and
                    that are derived only from the base instructions ")
   (:nicknames :rdv)
-  (:use :cl :rvasm :i-32-rv) ;; ?? not portable!!
+  (:use :cl :rvreg :rvasm :i-32-rv) ;; ?? not portable!!
   (:shadow not)
   (:export #:nop4 #:seqz #:inc #:dec #:not #:neg
            #:seqz #:snez #:sltz #:sgtz
