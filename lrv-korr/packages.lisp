@@ -1,24 +1,26 @@
 
 (defpackage "RVASM"
-  ;; (:use :cl :cl-user)
+  ;; (:use :cl :rvreg)
+  ;; (:shadow zero ra sp gp tp fp s0 s1 )
   ;; (:shadow or and)
   (:export 
 ;; files-lrv.cl
             #:write-binary-file #:bin-file #:read-binary-file
 
 ;; kone-lrv.cl
-            #:zero #:ra #:sp #:gp #:tp #:s0 #:fp #:s1
-            #:*pc* #:x16 #:x32 #:regno #:cregp #:cregno #:rv-error
+            ;; #:zero #:ra #:sp #:gp #:tp #:s0 #:fp #:s1 ;;  #:x16 #:x32
+            #:*pc* #:regno #:cregp #:cregno #:rv-error
             #:build-expr-code #:build-expr-code* #:immp #:uimmp #:bits #:offset
-            #:lnot-imm #:lnotb #:lnotj #:lnotv #:lnotz
+            ;; #:lnot-imm #:lnotb #:lnotj #:lnotv #:lnotz
 
 ;; env-lrv.cl
             #:code-vector #:symbol-table
             #:*lazy-marker* #:promise #:*memoize-promises*
             #:force #:set-promise-value #:parse-binding #:forcing #:delay
+            #:pure-delay
             #:resolve-tree
-            #:get-byte #:encode-byte  #:encode-jait #:encode-vait #:encode-zait
-            #:encode-yait
+            #:get-byte
+            #:encode-byte #:encode-jait #:encode-vait #:encode-zait #:encode-yait
             #:join-masks
 
             ;; (defgeneric (setf env-address) (address env)
@@ -32,7 +34,7 @@
             #:*env* #:*origin* #:*max-address*
             #:emit #:emit-byte #:emit-jait #:emit-vait #:emit-zait
             #:advance-to #:align #:label #:set-label #:label-difference
-            #:with-label #:usoro
+            ;; #:with-label #:usoro
 
 ;; fmt-lrv.cl
             #:creg #:cimm #:ciwid #:cismal #:cload #:cstore #:cstst #:cjump
@@ -45,9 +47,10 @@
 (defpackage "RVASM-UTILS"
   (:documentation "Procedures that expand on the basic rvasm package")
   (:nicknames :rvutl)
-  (:use :cl :rvasm)
+  (:use :cl :rvreg :rvasm)
   (:export
-
+          #:weak-label #:named-emit #:str-rv #:with-label #:usoro
+          #:lnot-imm #:lnotb #:lnotj #:lnotv #:lnotz
    ))
 
 
