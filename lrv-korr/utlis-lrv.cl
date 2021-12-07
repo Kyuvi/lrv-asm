@@ -16,10 +16,16 @@
         ((symbolp lbl) (symbol-append lbl '-end))
         (t (error "make-end-label: ~a not a symbol or keyword" lbl))))
 
-(defun weak-label (name backup &key (offset 0) (env *env*))
+(defun weak-label (name backup &key (ofst 0) (env *env*))
+  ;; needs to be used before the backup is defined or
+  ;; backup needs to be defined after useful name labels
   (assert (not (null env)))
-  (delay name (offset)
-    (+ offset (cl::or (env-find-label name) (label backup))))
+  ;; (pure-delay name (ofst) ;; didn't really work as nearly everything uses delay
+  (delay name (ofst)
+    (+ ofst (cl::or (env-find-label env name)
+                      (progn (warn "using label ~a instead of ~a" backup name)
+                             (label backup))))
+)
   )
 
 
@@ -28,27 +34,26 @@
 (defun named-emit (name type &rest numz)
   (set-label name)
   (case type
-    (:byte (apply #'emit-byte numz)); (align-gen))
-    (:jait (apply #'emit-jait numz)); (align-gen))
-    (:vait (apply #'emit-vait numz)); (align-gen))
-    (:zait (apply #'emit-zait numz)); (align-gen))
-    (:yait (apply #'emit-yait numz)); (align-gen))
+    ((cl:or :byte :b) (apply #'emit-byte numz)); (align-gen))
+    ((cl:or :jait :j) (apply #'emit-jait numz)); (align-gen))
+    ((cl:or :vait :v) (apply #'emit-vait numz)); (align-gen))
+    ((cl:or :zait :z) (apply #'emit-zait numz)); (align-gen))
+    ((cl:or :yait :y) (apply #'emit-yait numz)); (align-gen))
+    (t (error "named-emit: Unknown type ~a." type))
     )
   ;; (align-gen)
   )
 
-(defun str-rv (name string &optional (zero t))
+(defun str-rv (name string &optional (nul t))
  ;; (dolist (byte (map 'list #'char-code
   ;; (apply #'emit-byte (map 'list #'char-code string)))
   (set-label name)
-  (if zero
+  (if nul
       (apply #'emit-byte (append (map 'list #'char-code string) '(0)))
       (apply #'emit-byte (map 'list #'char-code string)))
   ;; (align-gen)
       )
 
-  ;; (substitute 176 96)
-  ;; (substitute 8800 36)
 (defun encode-num (num)
   ;; (loop for x upfrom 8 by 4)
   ;; (let ((num-size 8))
@@ -114,9 +119,8 @@
      (let ((*env* (make-instance 'local-env :parent *env*)))
        ,@body)))
 
-
-
         ;;;; miscellenous utilites ;;;;
+
 (defun lnot-imm (x imm)
   "Get the 'imm' bits of the logical-not of a number 'x'"
   (bits (lognot x) (- imm 1) 0))
