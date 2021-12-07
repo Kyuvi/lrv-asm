@@ -452,6 +452,83 @@
         (t (i.jalr crd crs1 cimm12))
   )) ;cc
 
+(defun call (cimm &optional (creg 'x1))
+ "(call cimm [creg x1])
+  Call far away subroutine (pseudoinstruction for (auipc creg) and (jalr creg))
+  Uses other instructions if...
+  cimm <= 12bits :c.jal
+  cimm <= 20bits :i.jal
+  cimm <= 32bits and multiple of 4096 (:i.auipc creg) and (c.jalr creg)"
+  (let* ((addr *pc*)
+         (ofst (offset cimm)))
+    (cond ((cl:and (numberp cimm) (immp ofst 12) (zerop (logand ofst #x1))
+                   (= (regno creg) 1))
+           (c.jal cimm))
+          ((cl:and (numberp cimm) (immp ofst 20) (zerop (logand ofst #x1)))
+           (i.jal creg cimm))
+          ((cl:and (numberp cimm) (immp ofst 32)
+                   (zerop (logand ofst #x00000fff)) (= (regno creg) 1))
+           (i.auipc creg ofst)
+           (c.jalr creg))
+          (t
+           (let ((imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+                 (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+             (emit-vait
+              (delay :auicall (ofst imm12 imm20)
+                (if (cl:not (immp ofst 32))
+                    (rv-error "call: Immediate value out of range" addr)
+                    (build-expr-code '(20 5 7)
+                                     (bits (if (= (logand imm12 #x800) #x800)
+                                               ;; test for addi overflow/sign extension??
+                                               (+ imm20 #x1000) imm20 ) 31 12)
+                                     ;;simulate overflow/sign extension
+                                     (regno creg) #x17))))
+             (emit-vait
+              (delay :jalrcall (imm12)
+                (build-expr-code '(12 5 3 5 7) imm12 (regno creg) 0 (regno creg)
+                                               #x67)))
+             ) ))))
+
+;; TODO: is it possible to add comprsessed instructions? needs test
+(defun tail (cimm &optional (treg 'x6))
+ "(tail cimm [treg x6])
+  Tail call far away subroutine
+  (pseudoinstruction for  (auipc treg) and (jalr x0 treg))
+  Uses other instructions if...
+  cimm <= 12bits :c.j
+  cimm <= 20bits :i.jal
+  cimm <= 32bits and multiple of 4096 (i.auipc treg) and (c.jr treg) "
+  (let* ((addr *pc*)
+         (ofst (offset cimm)))
+    (cond ((cl:and (numberp cimm) (immp ofst 12) (zerop (logand ofst #x1)))
+           (c.j cimm))
+          ((cl:and (numberp cimm) (immp ofst 20) (zerop (logand ofst #x1)))
+           (i.jal 'x0 cimm))
+          ((cl:and (numberp cimm) (immp ofst 32)
+                   (zerop (logand ofst #x00000fff)))
+           (i.auipc treg ofst)
+           (c.jr treg))
+          (t
+           (let ((imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+                 (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+             (emit-vait
+              (delay :auitail (ofst imm12 imm20)
+                (if (cl:not (immp ofst 32))
+                    (rv-error "tail: Immediate value out of range" addr)
+                    (build-expr-code '(20 5 7)
+                                     (bits (if (= (logand imm12 #x800) #x800)
+                                               ;; test for addi overflow/sign extension??
+                                               (+ imm20 #x1000) imm20 ) 31 12)
+                                     ;;simulate overflow/sign extension
+                                     (regno treg) #x17))))
+             (emit-vait
+              (delay :jalrtail (imm12)
+                (build-expr-code '(12 5 3 5 7) imm12 (regno treg) 0 (regno 'x0)
+                                 #x67)))
+    )
+  ))))
+
+
 (defun beq (crs1 crs2 cimm)
  "(beq crs1 crs2 cimm)
   Branch if equal: If crs1 is equal to crs2, the immediate is sign-extended
