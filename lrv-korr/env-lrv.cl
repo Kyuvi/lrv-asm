@@ -121,23 +121,10 @@
         ;;;; bits, bytes, jaits, vaits, zaits and yaits ;;;;
 
 ;; The instruction are loaded into the vector in a series of bytes (8-bits)
-;; Risc-v uses Indus instructions, also known as little endian, this meeans
-;; the 32 or 16 bit instructions are inverted bytewise (8-bits) before being
+;; Risc-v uses Indus instructions, also known as little endian, this means
+;; the 32 or 16 bit instructions are inverted bytewise (in 8-bit chunks) before being
 ;; stored into memory
 
-
-
-;; get a single byte sized chunk of a number
-;; (defun get-bait (n val)
-;;   (logand #xff (ash val (- (* 8 n ))))
-;;   )
-
-;; Extract single byte "n" from a number "val"
-;; (byte 0 being the least significant byte)
-(defgeneric get-byte (n val)
-  (:method (n (val integer)) (ldb (byte 8 (* 8 n)) val))
-  (:method (n (val promise)) (delay :bait (val) (get-byte n val))))
-  ;; (:method (n (val promise)) (delay :bait (n val) (get-byte n val))))
 
 (defun test-byte (x)
   ;; (delay :test-byte (x) (etypecase x ((integer 0 255) x))))
@@ -159,6 +146,18 @@
   ;; (delay :test-yait (x)
          ;; (etypecase x ((integer 0 #xffffffffffffffffffffffffffffffff) x))))
   (delay :test-yait (x) (etypecase x ((unsigned-byte 128) x))))
+
+;; get a single byte sized chunk of a number
+;; (defun get-bait (n val)
+;;   (logand #xff (ash val (- (* 8 n ))))
+;;   )
+
+;; Extract single byte "n" from a number "val"
+;; (byte 0 being the least significant byte)
+(defgeneric get-byte (n val)
+  (:method (n (val integer)) (ldb (byte 8 (* 8 n)) val))
+  (:method (n (val promise)) (delay :bait (val) (get-byte n val))))
+  ;; (:method (n (val promise)) (delay :bait (n val) (get-byte n val))))
 
 (defun do-encode (name obj num  test)
   "Build 'num' (+ 1) byte vector of encoded 'obj'
