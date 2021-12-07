@@ -105,8 +105,8 @@
 
 (defmacro with-label (label &body body)
   (when (and (listp label) (eql (first label) 'quote))
-    (warn "Quoted label name ~a, probably not what you intended" label)
-    `(progn (set-label ',label) ,@body)))
+    (warn "Quoted label name ~a, probably not what you intended" label))
+    `(progn (set-label ',label) ,@body))
 
 (defmacro usoro (name &body body)
   `(progn
