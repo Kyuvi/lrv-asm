@@ -151,8 +151,8 @@
 
 ;; (defun li (rd imm))
 
-(defun la (crd cimm)
- "(la crd cimm)
+(defun la (rd imm)
+ "(la rd imm)
   Load address: Load (pc relative) address into rv
   assumes use of #h or #y read macros to avoid twos complement errors. "
   (let* ((addr *pc*) (ofst (offset imm))
@@ -167,13 +167,13 @@
                                       ;; test for addi overflow/sign extension??
                                       (+ imm20 #x1000) imm20 )
                                   ;;simulate overflow/sign extension
-                                  31 12) (regno crd) #x17))))
+                                  31 12) (regno rd) #x17))))
     ;; (addi crd crd imm12)) ;; does not work because of (immp imm12 12) test
     ;; need to "force" it to accept #x800 as #x-800
     ;; TODO: is it possible to add comprsessed instructions?
     (emit-vait
-     (delay :addli (imm12)
-       (build-expr-code '(12 5 3 5 7) imm12 (regno crd) 0 (regno crd) #x13)))))
+     (delay :addla (imm12)
+       (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))))
 
 (defun lfb (rd imm)
   ;; (let ((ofst (offset imm)))
@@ -238,6 +238,7 @@
                                       (+ imm20 #x1000) imm20 )
                                   ;;simulate overflow/sign extension
                                   31 12) (regno rd) #x17))))
+    ;; TODO: add c.lv here
     (emit-vait
      (delay :lfv (imm12)
        (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 2 (regno rd) #x3)))
@@ -260,10 +261,10 @@
                                       ;; test for addi overflow/sign extension??
                                       (+ imm20 #x1000) imm20 )
                                   ;;simulate overflow/sign extension
-                                  31 12) (regno rd) #x17))))
+                                  31 12) (regno rb) #x17))))
     (emit-vait
      (delay :sfb (imm12)
-       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
+       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rb)
                         0 (bits imm12 4 0) #x23)))
     ))
 ;))
@@ -271,7 +272,7 @@
 (defun sfj (rs rb imm)
   ;; (let ((ofst (offset imm)))
   ;; (if (cl:and (ingtegerp imm) (immp ofst 12))
-  ;;     (i.sj rd rd ofst)
+  ;;     (i.sj rs rb ofst)
   (let* ((addr *pc*) (ofst (offset imm))
          (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
          (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
@@ -284,10 +285,10 @@
                                       ;; test for addi overflow/sign extension??
                                       (+ imm20 #x1000) imm20 )
                                   ;;simulate overflow/sign extension
-                                  31 12) (regno rd) #x17))))
+                                  31 12) (regno rb) #x17))))
     (emit-vait
      (delay :sfj (imm12)
-       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
+       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rb)
                         1 (bits imm12 4 0) #x23)))
     ))
 ;))
@@ -295,7 +296,7 @@
 (defun sfv (rs rb imm)
   ;; (let ((ofst (offset imm)))
   ;;   (if (cl:and (ingtegerp imm) (immp ofst 12))
-  ;;       (i.sv rd rd ofst)
+  ;;       (i.sv rs rb ofst)
   (let* ((addr *pc*) (ofst (offset imm))
          (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
          (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
@@ -308,23 +309,29 @@
                                       ;; test for addi overflow/sign extension??
                                       (+ imm20 #x1000) imm20 )
                                   ;;simulate overflow/sign extension
-                                  31 12) (regno rd) #x17))))
+                                  31 12) (regno rb) #x17))))
     (emit-vait
      (delay :sfv (imm12)
-       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rd)
+       (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno rs) (regno rb)
                         2 (bits imm12 4 0) #x23)))
     ))
 ;;))
 
 ;; TODO: is it possible to add comprsessed instructions? needs test c.jal offset 12?
-(defun call (imm)
- "(call imm)
-  Call far away subroutine (pseudoinstruction for auipc x1 and jalr x1)"
+(defun call (imm &optional (reg 'x1))
+ "(call imm [reg x1])
+  Call far away subroutine (pseudoinstruction for auipc reg and jalr reg)"
   (let* ((addr *pc*)
          (ofst (offset imm))
+    ;;      )
+    ;; (cond  ;; can use single base instruction if imm < 20-bits
+    ;;   ((cl:and (numberp imm) (immp ofst 20) (zerop (logand ofst #x1)))
+    ;;    (i.jal reg imm))
+    ;;   (t
+    ;;    (let (
          (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
          (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
-    ;; (i.auipc 'x1
+    ;; (i.auipc reg
     ;;        ;; imm20 )
     ;;        (delay :call (imm12 imm20) (if (= (logand imm12 #x800) #x800)
     ;;                                     ;; test for addi overflow/sign extension??
@@ -338,44 +345,48 @@
                                             ;; test for addi overflow/sign extension??
                                                 (+ imm20 #x1000) imm20 ) 31 12)
                                              ;;simulate overflow/sign extension
-                                                (regno 'x1) #x17))))
-    ;; (i.jalr 'x1 'x1 imm12))
-    ;; (if (cl:and (numberp imm12) (= imm12 0))
-    ;;     (c.jalr 'x1)
+                                                (regno reg) #x17))))
+    ;; (i.jalr reg reg imm12))
     (emit-vait
       (delay :jalrcall (imm12)
-        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x1) 0 (regno 'x1) #x67)))
+        (build-expr-code '(12 5 3 5 7) imm12 (regno reg) 0 (regno reg) #x67)))
+    ;;)))
   ))
 
 ;; TODO: is it possible to add comprsessed instructions? needs test
-(defun tail (imm)
- "(tail imm)
+(defun tail (imm &optional (treg 'x6))
+ "(tail imm [treg 'x6])
   Tail call far away subroutine
    (pseudoinstruction for  (auipc x6) and (jalr x0 x6))"
   (let* ((addr *pc*)
          (ofst (offset imm))
-         (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
-         (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
-    ;; (i.auipc 'x6
+    ;;      )
+    ;; (cond ;; can use single base instruction if imm < 20-bit
+    ;;   ((cl:and (numberp imm) (immp ofst 20) (zerop (logand ofst #x1)))
+    ;;    (i.jal 'x0 imm))
+    ;;   (t
+    ;;    (let (
+             (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+             (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+    ;; (i.auipc treg
     ;;        ;; imm20 )
     ;;        (delay :tail (imm12 imm20) (if (= (logand imm12 #x800) #x800)
     ;;                                     ;; test for addi overflow/sign extension??
     ;;                                     (+ imm20 #x1000) imm20 )))
     ;;                                     ;;simulate overflow/sign extension
-    (emit-vait
-     (delay :auitail (ofst imm12 imm20)
-       (if (cl:not (immp ofst 32))
-           (rv-error "tail: Immediate value out of range" addr)
-           (build-expr-code '(20 5 7) (bits (if (= (logand imm12 #x800) #x800)
-                                            ;; test for addi overflow/sign extension??
-                                                (+ imm20 #x1000) imm20 ) 31 12)
-                                             ;;simulate overflow/sign extension
-                                                (regno 'x6) #x17))))
-    ;; (i.jalr 'x0 'x6 imm12))
-    ;; (if (cl:and (numberp imm12) (= imm12 0))
-    ;;     (c.jr 'x6)
-    (emit-vait
-      (delay :jalrtail (imm12)
-        (build-expr-code '(12 5 3 5 7) imm12 (regno 'x6) 0 (regno 'x0) #x67)))
-    )
-  )
+         (emit-vait
+          (delay :auitail (ofst imm12 imm20)
+            (if (cl:not (immp ofst 32))
+                (rv-error "tail: Immediate value out of range" addr)
+                (build-expr-code '(20 5 7)
+                                 (bits (if (= (logand imm12 #x800) #x800)
+                                           ;; test for addi overflow/sign extension??
+                                           (+ imm20 #x1000) imm20 ) 31 12)
+                                 ;;simulate overflow/sign extension
+                                 (regno treg) #x17))))
+    ;; (i.jalr 'x0 treg imm12))
+         (emit-vait
+          (delay :jalrtail (imm12)
+            (build-expr-code '(12 5 3 5 7) imm12 (regno treg) 0 (regno 'x0) #x67)))
+    ;; )))
+  ))
