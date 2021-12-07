@@ -388,14 +388,13 @@
 
 
 
-(defmacro with-label (label &body body)
-  (when (and (listp label) (eql (first label) 'quote))
-    (warn "Quoted label name ~a, probably not what you intended" label)
-    `(progn (set-label ',label) ,@body)))
+;; (defmacro with-label (label &body body)
+;;   (when (and (listp label) (eql (first label) 'quote))
+;;     (warn "Quoted label name ~a, probably not what you intended" label)
+;;     `(progn (set-label ',label) ,@body)))
 
-(defmacro usoro (name &body body)
-  `(progn
-     (set-label ',name)
-     (let ((*env* (make-instance 'local-env :parent *env*)))
-       ,@body)))
-
+;; (defmacro usoro (name &body body)
+;;   `(progn
+;;      (set-label ',name)
+;;      (let ((*env* (make-instance 'local-env :parent *env*)))
+;;        ,@body)))
