@@ -51,8 +51,8 @@
   position (pc)"
   (c.j imm))
 
-(defun ret (&optional (rs1 'ra))
- "(ret &optional (rs1 'ra)
+(defun ret (&optional (rs1 ra))
+ "(ret &optional (rs1 ra)
   Return (Jump to) return address in reg
   if no register is given use ra(x1)"
   (c.jr rs1))
