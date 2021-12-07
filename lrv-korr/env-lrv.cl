@@ -109,6 +109,10 @@
     (make-promise :name ,name :fun (lambda () (forcing ,dependencies ,@body)))
     nil))
 
+(defmacro pure-delay (name dependencies &body body)
+ "Creates a new promise that remains a promise till actively resolved"
+  `(make-promise :name ,name :fun (lambda () (forcing ,dependencies ,@body))))
+
 (defun resolve-tree (tree)
   (etypecase tree
     (cons (cons (resolve-tree (car tree))
