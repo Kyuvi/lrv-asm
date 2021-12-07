@@ -130,23 +130,18 @@
   assumes use of #h or #y read macros to avoid twos complement errors.
   Uses a compressed instruction if...
   crd ≠ x0 and 0 ≠ cimm32 <= 6 bits :c.li.
-  crd = crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 16 :c.addi16sp.
-  crd = x2 and 0 ≠ imm <= 10 bit multiple of 4 :c.addi4spn."
+  crd ≠ x0|x2 and  0 ≠ cimm32 <= 18 bits :c.lui [and optionally c.li or i.addi]
+
+"
   (cond ((cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm)) ) ;; (cregp rd))
          (c.li rd cimm))
-        ;; ((cl:and (integerp cimm) (immp cimm 10) (zerop (logand cimm #xf))
-        ;;          (= (regno crd) 2) (cl:not (zerop cimm)))
-        ;;  (c.addi16sp cimm))
-        ;; ((cl:and (integerp cimm) (uimmp cimm 10) (zerop (logand cimm #x3))
-        ;;          (= (regno crd) 2) (cl:not (zerop ofst)))
-        ;;  (c.addi4sp crd cimm))
         ((cl:and (integerp cimm) (immp cimm 12))
          (i.addi rd 'x0 cimm))
         ((cl:and (integerp cimm) (immp cimm 18) (zerop (logand cimm #xfff))
-                 (not (zerop (regno rd))) (not (= (regno rd) 2)))
+                 (cl:not (zerop (regno rd))) (cl:not (= (regno rd) 2)))
          (c.lui rd cimm))
-        ((cl:and (integerp cimm) (immp cimm 18)
-                 (not (zerop (regno rd))) (not (= (regno rd) 2)))
+        ((cl:and (integerp cimm) (immp cimm 18) (cl:not (zerop cimm))
+                 (cl:not (zerop (regno rd))) (cl:not (= (regno rd) 2)))
          (let* ((imm12 (logand cimm #x00000fff))
                 (imm18 (logand cimm #xfffff000))
                 (imm18c (if (= (logand imm12 #x800) #x800)
@@ -163,6 +158,25 @@
            ))
         ((cl:and (integerp cimm) (immp cimm 32) (zerop (logand cimm #xfff)))
          (i.lui rd cimm))
+        ((cl:and (integerp cimm) (immp cimm 32))
+         (let ((imm12 (logand cimm #x00000fff))
+               (imm20 (logand cimm #xfffff000)))
+           (emit-vait
+            (build-expr-code '(20 5 7)
+                             (bits (if (= (logand imm12 #x800) #x800)
+                                       ;; test for addi overflow/sign extension??
+                                       (+ imm20 #x1000) imm20 )
+                                   ;;simulate overflow/sign extension
+                                   31 12) (regno rd) #x37))
+           (if  (immp imm12 6) ;; use  c.addi if possible TODO: TEST!! (NOT c.li)
+                (emit-jait
+                 (build-expr-code '(3 1 5 5 2) 0 (bits imm12 5) (regno rd)
+                                  (bits imm12 4 0) 1))
+           ;; (addi rd rd imm12)) ;; does not work because of (immp imm12 12) test
+           ;; need to "force" it to accept #x800 as #x-800
+                (emit-vait
+                   (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13)))
+        ))
   ;; (delay :li (cimm)
         (t (let ((addr *pc*)
                  (imm12 (delay :imm12 (cimm) (logand cimm #x00000fff)))
