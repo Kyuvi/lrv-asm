@@ -564,6 +564,45 @@
         (t (i.lv crd crs1 cimm12)))
    );) ;cc
 
+(defun lfv (crd imm)
+  (let ((ofst (offset imm)))
+    (if (cl:and (ingtegerp imm) (immp ofst 32))
+        (let* ((imm12 (logand ofst #x00000fff))
+               (imm20 (logand ofst #xfffff000)))
+          (emit-vait ;; auipc
+           (build-expr-code '(20 5 7)
+                            (bits (if (= (logand imm12 #x800) #x800)
+                                      ;; test for addi overflow/sign extension??
+                                      (+ imm20 #x1000) imm20 )
+                                  ;;simulate overflow/sign extension
+                                  31 12) (regno crd) #x17))
+          (if (cl:and (uimmp imm12 7) (zerop (logand imm12 #x3)) (cregp crd))
+              (emit-jait ;; c.lv
+               (build-expr-code '(3 3 3 1 1 3 2) 2 (bits imm12 5 3) (cregno crd)
+                                (bits imm12 2) (bits imm12 6)
+                                (cregno crd) 0))
+              (emit-vait ;; i.lv
+               (build-expr-code '(12 5 3 5 7) imm12 (regno crd) 2 (regno crd)
+                                               #x3)))
+              )
+        (let* ((addr *pc*)
+               (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+               (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+          (emit-vait
+           (delay :lauipcv (ofst imm12 imm20)
+             (if (cl:not (immp ofst 32))
+                 (rv-error "lfv: Upper Immediate value out of range." addr)
+                 (build-expr-code '(20 5 7)
+                                  (bits (if (= (logand imm12 #x800) #x800)
+                                            ;; test for addi overflow/sign extension??
+                                            (+ imm20 #x1000) imm20 )
+                                        ;;simulate overflow/sign extension
+                                        31 12) (regno crd) #x17))))
+          (emit-vait
+           (delay :lfv (imm12)
+             (build-expr-code '(12 5 3 5 7) imm12 (regno crd) 2 (regno crd) #x3)))
+          ))
+    ))
 
 ;;
 
@@ -617,6 +656,48 @@
         (t (i.sv crs crb cimm12)))
       );) ;cc
 
+
+(defun sfv (crs crb imm)
+  (let ((ofst (offset imm)))
+    (if (cl:and (ingtegerp imm) (immp ofst 32))
+        (let* ((imm12 (logand ofst #x00000fff))
+               (imm20 (logand ofst #xfffff000)))
+          (emit-vait
+           (build-expr-code '(20 5 7)
+                            (bits (if (= (logand imm12 #x800) #x800)
+                                      ;; test for addi overflow/sign extension??
+                                      (+ imm20 #x1000) imm20 )
+                                  ;;simulate overflow/sign extension
+                                  31 12) (regno crb) #x17))
+          (if (cl:and (uimmp imm12 7) (zerop (logand imm12 #x3)) (cregp crb))
+              (emit-jait ;; c.sv
+               (build-expr-code '(3 3 3 1 1 3 2) 6 (bits imm12 5 3) (cregno crb)
+                                (bits imm12 2) (bits imm12 6)
+                                (cregno crs) 0))
+
+              (emit-vait ;; i.sv
+               (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno crs)
+                                (regno crb) 2 (bits imm12 4 0) #x23))
+              ))
+        (let* ((addr *pc*)
+               (imm12 (delay :imm12 (ofst) (logand ofst #x00000fff)))
+               (imm20 (delay :imm20 (ofst) (logand ofst #xfffff000))))
+          (emit-vait
+           (delay :sauipcv (ofst imm12 imm20)
+             (if (cl:not (immp ofst 32))
+                 (rv-error "sfv: Upper Immediate value out of range." addr)
+                 (build-expr-code '(20 5 7)
+                                  (bits (if (= (logand imm12 #x800) #x800)
+                                            ;; test for addi overflow/sign extension??
+                                            (+ imm20 #x1000) imm20 )
+                                        ;;simulate overflow/sign extension
+                                        31 12) (regno crb) #x17))))
+          (emit-vait
+           (delay :sfv (imm12)
+             (build-expr-code '(7 5 5 3 5 7) (bits imm12 11 5) (regno crs)
+                              (regno crb) 2 (bits imm12 4 0) #x23)))
+          ))
+    ))
 
         ;;;; Miscellaneous Instructions ;;;;
 
