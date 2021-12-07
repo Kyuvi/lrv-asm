@@ -318,7 +318,7 @@
   Uses a compressed instruction if...
   crd = crs1 = x8..x15 = crs2 :c.sub "
   (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
-      (c.sub (crd crs2))
+      (c.sub crd crs2)
       (i.sub crd crs1 crs2))
   ) ;sc
 
