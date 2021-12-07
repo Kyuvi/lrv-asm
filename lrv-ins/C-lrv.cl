@@ -301,7 +301,7 @@
  "(c.j imm)
   Compressed jump: Jump to address described by  adding the pc to the
   sign extended immediate.
-  Offset should be in the range -1024(#x-400) to 1023(#x3FF).
+  Offset should be a multiple of 2 in the range -1024(#x-400) to 1022(#x3FE).
   (jal x0 offset), range = ±2KiB."
   ;; TODO offset ?
 ;;   (let ((addr *pc*)
@@ -313,8 +313,10 @@
 ;;  jal x1 offset
 (defun c.jal (imm)
  "(c.jal imm)
-  Compressed Jump and link: Jump to address described by immediate storing
-  return address(pc+2) in x1. (jal x1 offset), range = ±2KiB."
+  Compressed Jump and link: Jump to address described by adding the pc to the
+  sign extended immediate storing return address(pc+2) in x1.
+  Offset should be a multiple of 2 in the range -1024(#x-400) to 1022(#x3FE).
+  (jal x1 offset), range = ±2KiB."
 ;;   (let ((addr *pc*)
 ;;         (ofst (offset imm)))
     (emit-jait (cjump imm 1 1))
@@ -326,7 +328,7 @@
 (defun c.jr (rs1)
  "(c.jr rs1)
   Compressed jump register: Jump to address contained in register.
-  (jalr x0 r1 0), rs1 ≠ 0."
+  (jalr x0 rs1 0), rs1 ≠ 0."
   (if (not (zerop (regno rs1)))
       (emit-jait (build-expr-code '(3 1 5 5 2) 4 0 (regno rs1) 0 2))
       (rv-error "c.jr: Can not use x0 as source register."))

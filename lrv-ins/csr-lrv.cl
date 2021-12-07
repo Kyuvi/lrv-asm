@@ -14,7 +14,8 @@
 
 (in-package "ZICSR-RV")
 ;; TODO change from rd rs1 csr to rd csr rs1
-        ;;;; register instructions ;;;;
+
+        ;;;; Register instructions ;;;;
 
 (defun csrrw (rd csr rs1)
  "(csrrw rd rs1 csr)
@@ -34,7 +35,7 @@
   that are set in rs1. If rs1 = x0 does not write and only reads from csr."
   (emit-vait (csrreg csr rs1 3 rd)))
 
-        ;;;; immediate instructions ;;;;
+        ;;;; Immediate instructions ;;;;
 
 (defun csrrwi (rd csr uimm5)
  "(csrrwi rd uimm5 csr)
@@ -56,42 +57,42 @@
   If rd = x0 does not read and only writes to csr."
   (emit-vait (csrimm csr uimm5 7 rd)))
 
-        ;;;; derived register instructions ;;;;
+        ;;;; Derived register instructions ;;;;
 
 (defun csrr (rd csr)
- "(csrr rd csr)
+ "(csrr csr rd)
   Reads contents of csr (zero extended) to rd"
   (csrrs rd csr 'x0))
 
 (defun csrw (csr rs)
- "(csrw rs1 csr)
+ "(csrw csr rs1)
   Write contents of rs to csr"
   (csrrw 'x0 csr rs))
 
 (defun csrs (csr rs)
- "(csrs rs1 csr)
+ "(csrs csr rs1)
   Sets the bits in the csr that are set in rs"
   (csrrs 'x0 csr rs))
 
 (defun csrc (csr rs)
- "(csrc rs1 csr)
+ "(csrc csr rs1)
   Clears the bits in the csr that are set in rs"
   (csrrc 'x0 csr rs))
 
-        ;;;;  derived immediate instructions  ;;;;
+        ;;;;  Derived immediate instructions  ;;;;
 
 (defun csrwi (csr uimm5)
- "(csrw uimm5 csr)
+ "(csrw csr uimm5)
   Write zero extended immediate 'uimm5' to csr"
   (csrrwi 'x0 csr uimm5))
 
 (defun csrsi (csr uimm5)
- "(csrsi uimm5 csr)
+ "(csrsi csr uimm5)
   Sets the bits in the csr that are set in the immediate 'uimm5'"
   (csrrsi 'x0 csr uimm5))
 
 (defun csrci (csr uimm5)
- "(csrci uimm5 csr)
+ "(csrci csr uimm5)
   Clears the bits in the csr that are set in the immediate 'uimm5'"
   (csrrci 'x0 csr uimm5))
 
@@ -346,6 +347,8 @@
 ;; (defconstant htimeh-csrΦ #xE81 "Upper 32 bits of htime, RV32I only (sro)")
 ;; (defconstant hinstreth-csrΦ #xE82 "Upper 32 bits of hinstret, RV32I only (sro)")
 
+        ;;;; Machine-level CSRs ;;;;
+
 ;; Machine Information Registers
 (defconstant mvendorid-csrΦ #xF11 "Vendor ID (mro)")
 (defconstant marchid-csrΦ #xF12 "Architecture ID (mro)")
@@ -358,14 +361,20 @@
 (defconstant medeleg-csrΦ #x302 "Machine exception delegation register (mrw)")
 (defconstant mideleg-csrΦ #x303 "Machine interrupt delegation register (mrw)")
 (defconstant mie-csrΦ #x304 "Machine interrupt-enable register (mrw)")
-(defconstant mtvec-csrΦ #x305 "Machine trap-handler base address (mrw)")
+(defconstant mtvec-csrΦ #x305 "Machine trap-vector base address (mrw)")
 ;; Only exists if there is user mode bit 0 - CY, bit 1 - TM, bit 2 - IR
 (defconstant mcounteren-csrΦ #x306 "Machine counter enable (mrw)")
 
 ;; Machine Trap Handling
 (defconstant mscratch-csrΦ #x340 "Scratch register for machine trap handlers (mrw)")
-(defconstant mepc-csrΦ #x341 "Machine exception program counter (mrw)")
-(defconstant mcause-csrΦ #x342 "Machine trap cause (mrw)")
+(defconstant mepc-csrΦ #x341
+  "Machine exception program counter (mrw)
+  Holds the address of the instruction that was interrupted or encountered
+  the exception (or written by software)")
+(defconstant mcause-csrΦ #x342
+  "Machine trap cause (mrw)
+  Holds the code indicating the event that caused the trap, with bit mxlen-1
+  set if the trap was caused by an interrupt (or written by software)")
 (defconstant mbadaddr-csrΦ #x343 "Machine bad address (mrw)")
 (defconstant mtval-csrΦ #x343 "Machine bad address or instruction (mrw)")
 (defconstant mip-csrΦ #x344 "Machine interrupt pending (mrw)")

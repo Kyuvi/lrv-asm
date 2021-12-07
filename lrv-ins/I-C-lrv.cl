@@ -22,6 +22,7 @@
 
 ;; TODO: Make portable
 ;; (use (if (= *base-register-size* 32)
+;; (use (if (= *xlen* 32)
 ;;          :i-32-rv :i-64-rv))
 
 ;; TODO: Move i.x only procedures to rvidrv
@@ -66,7 +67,7 @@
   crd = crs1 and  0 ≠ cimm12 <= 6 bits :c.addi
   crd ≠ x0 = crs1 and 0 ≠ cimm32 <= 6 bits :c.li
   crd = crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 16 :c.addi16sp
-  crd = x2 and 0 ≠ imm <= 10 bit multiple of 4 :c.addi4spn "
+  crd = x8..x15, crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 4 :c.addi4spn "
   (cond
     ((cl:and (integerp cimm12) (immp cimm12 6) (cl:not (zerop cimm12))
              (eq crd crs1) (cl:not (zerop (regno crd))) (cl:not (= (regno crd) 2)))
@@ -199,7 +200,8 @@
                                            31 12) (regno rd) #x37))))
              ;; (addi rd rd imm12)) ;; does not work because of (immp imm12 12) test
              ;; need to "force" it to accept #x800 as #x-800
-             ;; TODO: is it possible to add comprsessed instructions?
+             ;; TODO: is it possible to add compresssed instructions? at some later time?
+             ;; c.addi?
              (emit-vait
               (delay :addli (imm12)
                 (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13))))
@@ -229,7 +231,7 @@
                                              (+ imm20 #x1000) imm20 )
                                              ;;simulate overflow/sign extension
                                            31 12) (regno rd) #x37))))
-        ;; TODO: is it possible to add comprsessed instructions?
+        ;; TODO: is it possible to add compresssed instructions?
         (emit-vait
          (delay :addliu (imm12)
            (build-expr-code '(12 5 3 5 7) imm12 (regno rd) 0 (regno rd) #x13))))))
@@ -265,7 +267,7 @@
 
 (defun andi (crd crs1 cimm12)
  "(andi crd crs1 cimm12)
-  AND 12-bit immediate (sign-extended to register length) with reg1 and load crd
+  AND 12-bit immediate (sign-extended to register length) with crs1 and load crd
   with result.
   Uses a compressed instruction if...
   crd = crs1 and 0 ≠ imm <= 6 bit :c.andi ."
@@ -277,7 +279,7 @@
 
 (defun slli (crd crs1 cimm5)
  "(slli crd crs1 cimm5)
-  Shift left logical immediate: Shift the contents of rs1 left by the immediate
+  Shift left logical immediate: Shift the contents of crs1 left by the immediate
   value (between 0 and 31) and load crd with result.
   Uses a compressed instruction if...
   crd = crs1 and 0 ≠ imm :c.slli ."
@@ -324,7 +326,6 @@
          (c.mv crd crs2))
         (t (i.add crd crs1 crs2)))
   ) ;cc
-
 
 (defun sub (crd crs1 crs2)
  "(sub crd crs1 crs2)
@@ -643,7 +644,7 @@
   address. A 32-bit value (vait) is fetched from this address and loaded into crd.
   The value is sign exteded to the full length of the register.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15, and cimm <= 7 bit multiple of 4 :c.lv
+  crd = x8..x15 = crs1 , and cimm <= 7 bit multiple of 4 :c.lv
   crd ≠ 0, crs1 = x2, and cimm <= 8 bit multiple of 4 :c.lvsp. "
   (cond ((cl:and (integerp cimm12) (zerop (logand cimm12 #xff83)) ;(immp cimm12 7)
                  (cregp crd) (cregp crs1)) ;; the above checks it is within bounds
@@ -695,7 +696,6 @@
           ))
     ))
 
-;;
 
 (defun lbu (rd rs1 imm12)
  "(lbu rd rs1 imm12)
@@ -735,7 +735,7 @@
   address. The least significant 32-bit value is copied from crs and stored at
   this address.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15, and cimm <= 7 bit multiple of 4 :c.sv
+  crd = x8..x15 = crs1 , and cimm <= 7 bit multiple of 4 :c.sv
   crd ≠ 0, crs1 = x2, and cimm <= 8 bit multiple of 4 :c.svsp. "
   (cond ((cl:and (integerp cimm12) (zerop (logand cimm12 #xff83)) ;(immp cimm12 7)
                  (cregp crs) (cregp crb))
