@@ -1,11 +1,11 @@
 
 (defpackage "CLRV-UTILS"
-  (:documentation "General Common Lisp procedures and macros that are useful in an
+  (:documentation "General Common Lisp procedures and macros that are useful in a
                    RISC-V assembly context")
   (:nicknames :clrv)
-  (:use :cl :rvasm)
+  ;; (:use :cl )
   (:export
-   #:export-mutiple-constants #:defconsts #:def-keyword-assoc
+   #:export-mutiple-constants #:def-multiple-constants #:def-keyword-assoc
    #:unintern-list #:unexport-list
    #:symbol-append #:keyword-append
    ))
@@ -27,7 +27,7 @@
 
 ;; (export-mutiple-constants (test #x4 "comment") (v 2))
 
-(defmacro defconsts (&rest constant-lists)
+(defmacro def-multiple-constants (&rest constant-lists)
   "(defconsts (&rest constant-lists))
    Define multiple constants."
   `(progn
