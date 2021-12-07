@@ -312,7 +312,8 @@
 
 (defclass delegate-symbol-definition (delegate-env) ())
 
-(defmethod env-set-label ((env delegate-symbol-lookup) symbol
+;; (defmethod env-set-label ((env delegate-symbol-lookup) symbol
+(defmethod env-set-label ((env delegate-symbol-definition) symbol
                           &optional (address (env-address env)))
   (env-set-label (env-parent env) symbol address))
 
