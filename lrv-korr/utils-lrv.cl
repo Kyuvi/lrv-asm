@@ -31,7 +31,8 @@
 
 ;;TODO: unsignied?
 ;;NOTE: align changes based on inclusion of compressed instruction set
-(defun named-emit (name type &rest numz)
+;; (defun named-emit (name type &rest numz)
+(defun svec-rv (name type &rest numz)
   (set-label name)
   (case type
     ((cl:or :byte :b) (apply #'emit-byte numz)); (align-gen))
