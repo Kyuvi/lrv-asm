@@ -3,8 +3,9 @@
    "Binding of register names to instances of register classes with
     corresponding values")
   (:nicknames :rvreg)
-  (:use :cl ) ;:clrv)
-  ;; (:import-from :clrv def-multiple-constants )
+  (:use :cl ) ;; :clrv)
+  (:import-from :clrv def-multiple-constants )
+  ;; (:shadowing-import-from :clrv def-multiple-constants )
   (:export
            #:rv-reg #:get-reg-val #:rv-c-reg #:get-c-reg-val
            #:rv-temp-reg #:rv-save-reg #:rv-arg-reg
@@ -79,14 +80,12 @@
 ;; Bind base module register names to their correspoinding types and values
 ;; (def-multiple-constants
 (def-multiple-registers
-  (zero 'rv-e-reg 0 "Zero register")
-  (ra 'rv-e-reg 1 "Return address")
-  (sp 'rv-e-reg 2 "Stack pointer")
-  (gp 'rv-e-reg 3 "Global pointer") ;- points to start of static region
-  (tp 'rv-e-reg 4 "Thread pointer")
-  (fp 'rv-e-reg 8 "Frame pointer/Saved Register 0")
-
-
+  ;; (zero 'rv-e-reg 0 "Zero register")
+  ;; (ra 'rv-e-reg 1 "Return address")
+  ;; (sp 'rv-e-reg 2 "Stack pointer")
+  ;; (gp 'rv-e-reg 3 "Global pointer") ;- points to start of static region
+  ;; (tp 'rv-e-reg 4 "Thread pointer")
+  ;; (fp 'rv-e-reg 8 "Frame pointer/Saved Register 0")
 
   ;; Basic regsiter names
   (x0 'rv-e-reg 0 "Zero register") (x1 'rv-e-reg 1 "Return address")
@@ -112,58 +111,76 @@
   (x30 'rv-base-temp-reg 30) (x31 'rv-base-temp-reg 31)
 
   ;; Argument register aliases
-  (a0 'rv-cb-arg-reg 10) (a1 'rv-cb-arg-reg 11) (a2 'rv-cb-arg-reg 12)
-  (a3 'rv-cb-arg-reg 13) (a4 'rv-cb-arg-reg 14) (a5 'rv-cb-arg-reg 15)
+  ;; (a0 'rv-cb-arg-reg 10) (a1 'rv-cb-arg-reg 11) (a2 'rv-cb-arg-reg 12)
+  ;; (a3 'rv-cb-arg-reg 13) (a4 'rv-cb-arg-reg 14) (a5 'rv-cb-arg-reg 15)
 
-  (a6 'rv-base-arg-reg 16) (a7 'rv-base-arg-reg 17)
+  ;; (a6 'rv-base-arg-reg 16) (a7 'rv-base-arg-reg 17)
 
-  ;; Saved register aliases
-  (s0 'rv-cb-save-reg 8 "Saved register 0/frame pointer")
-  (s1 'rv-cb-save-reg 9 "Saved register 1")
-  (s2 'rv-base-save-reg 18) (s3 'rv-base-save-reg 19) (s4 'rv-base-save-reg 20)
-  (s5 'rv-base-save-reg 21) (s6 'rv-base-save-reg 22) (s7 'rv-base-save-reg 23)
-  (s8 'rv-base-save-reg 24) (s9 'rv-base-save-reg 25) (s10 'rv-base-save-reg 26)
-  (s11 'rv-base-save-reg 27)
+  ;; ;; Saved register aliases
+  ;; (s0 'rv-cb-save-reg 8 "Saved register 0/frame pointer")
+  ;; (s1 'rv-cb-save-reg 9 "Saved register 1")
+  ;; (s2 'rv-base-save-reg 18) (s3 'rv-base-save-reg 19) (s4 'rv-base-save-reg 20)
+  ;; (s5 'rv-base-save-reg 21) (s6 'rv-base-save-reg 22) (s7 'rv-base-save-reg 23)
+  ;; (s8 'rv-base-save-reg 24) (s9 'rv-base-save-reg 25) (s10 'rv-base-save-reg 26)
+  ;; (s11 'rv-base-save-reg 27)
 
-  ;; Temporary regsister aliases
-  (t0 'rv-e-temp-reg 5) (t1 'rv-e-temp-reg 6) (t2 'rv-e-temp-reg 7)
+  ;; ;; Temporary regsister aliases
+  ;; (t0 'rv-e-temp-reg 5) (t1 'rv-e-temp-reg 6) (t2 'rv-e-temp-reg 7)
 
-  (t3 'rv-base-temp-reg 28) (t4 'rv-base-temp-reg 29) (t5 'rv-base-temp-reg 30)
-  (t6 'rv-base-temp-reg 31)
+  ;; (t3 'rv-base-temp-reg 28) (t4 'rv-base-temp-reg 29) (t5 'rv-base-temp-reg 30)
+  ;; (t6 'rv-base-temp-reg 31)
 
   ;; lrv specific register names
-  (r0 'rv-e-reg 0) (r1 'rv-e-reg 1) (r2 'rv-e-reg 2) (r3 'rv-e-reg 3)
-  (r4 'rv-e-reg 4)
+  ;; (r0 'rv-e-reg 0) (r1 'rv-e-reg 1) (r2 'rv-e-reg 2) (r3 'rv-e-reg 3)
+  ;; (r4 'rv-e-reg 4)
 
-  (r5 'rv-e-temp-reg 5) (r6 'rv-e-temp-reg 6) (r7 'rv-e-temp-reg 7)
+  ;; (r5 'rv-e-temp-reg 5) (r6 'rv-e-temp-reg 6) (r7 'rv-e-temp-reg 7)
 
-  (r8 'rv-cb-save-reg 8) (r9 'rv-cb-save-reg 9) (r10 'rv-cb-arg-reg 10)
+  ;; (r8 'rv-cb-save-reg 8) (r9 'rv-cb-save-reg 9) (r10 'rv-cb-arg-reg 10)
 
-  (r11 'rv-cb-arg-reg 11) (r12 'rv-cb-arg-reg 12) (r13 'rv-cb-arg-reg 13)
-  (r14 'rv-cb-arg-reg 14) (r15 'rv-cb-arg-reg 15)
+  ;; (r11 'rv-cb-arg-reg 11) (r12 'rv-cb-arg-reg 12) (r13 'rv-cb-arg-reg 13)
+  ;; (r14 'rv-cb-arg-reg 14) (r15 'rv-cb-arg-reg 15)
 
-  (r16 'rv-base-arg-reg 16) (r17 'rv-base-arg-reg 17)
-  (r18 'rv-base-save-reg 18) (r19 'rv-base-save-reg 19)
-  (r20 'rv-base-save-reg 20) (r21 'rv-base-save-reg 21)
-  (r22 'rv-base-save-reg 22) (r23 'rv-base-save-reg 23)
-  (r24 'rv-base-save-reg 24) (r25 'rv-base-save-reg 25)
-  (r26 'rv-base-save-reg 26) (r27 'rv-base-save-reg 27)
+  ;; (r16 'rv-base-arg-reg 16) (r17 'rv-base-arg-reg 17)
+  ;; (r18 'rv-base-save-reg 18) (r19 'rv-base-save-reg 19)
+  ;; (r20 'rv-base-save-reg 20) (r21 'rv-base-save-reg 21)
+  ;; (r22 'rv-base-save-reg 22) (r23 'rv-base-save-reg 23)
+  ;; (r24 'rv-base-save-reg 24) (r25 'rv-base-save-reg 25)
+  ;; (r26 'rv-base-save-reg 26) (r27 'rv-base-save-reg 27)
 
-  (r28 'rv-base-temp-reg 28) (r29 'rv-base-temp-reg 29)
-  (r30 'rv-base-temp-reg 30) (r31 'rv-base-temp-reg 31)
+  ;; (r28 'rv-base-temp-reg 28) (r29 'rv-base-temp-reg 29)
+  ;; (r30 'rv-base-temp-reg 30) (r31 'rv-base-temp-reg 31)
   )
+
+(def-multiple-constants ;; define aliases
+  (zero x0) (ra x1) (sp x2) (gp x3) (tp x4)
+  (fp x8 "Saved register 0/frame pointer")
+  ;; Argument register aliases
+  (a0 x10) (a1 x11) (a2 x12) (a3 x13) (a4 x14) (a5 x15) (a6 x16) (a7 x17)
+  ;; Saved register aliases
+  (s0 x8 "Saved register 0/frame pointer") (s1 x9) (s2 x18) (s3 x19) (s4 x20)
+  (s5 x21) (s6 x22) (s7 x23) (s8 x24) (s9 x25) (s10 x26) (s11 x27)
+  ;; Temporary regsister aliases
+  (t0 x5) (t1 x6) (t2 x7) (t3 x28) (t4 x29) (t5 x30) (t6 x31)
+  ;; lrv specific register names
+  (r0 x0) (r1 x1) (r2 x2) (r3 x3) (r4 x4) (r5 x5) (r6 x6) (r7 x7) (r8 x8) (r9 x9)
+  (r10 x10) (r11 x11) (r12 x12) (r13 x13) (r14 x14) (r15 x15) (r16 x16) (r17 x17)
+  (r18 x18) (r19 x19) (r20 x20) (r21 x21) (r22 x22) (r23 x23) (r24 x24) (r25 x25)
+  (r26 x26) (r27 x27) (r28 x28) (r29 x29) (r30 x30) (r31 x31)
+)
+
 
 ;; TODO: floating point classes
 
-(defclass rv-f-reg (rv-reg) ())
+(defclass rv-float-reg (rv-reg) ())
 
-(defclass rv-cf-reg (rv-f-reg rv-c-reg)
+(defclass rv-cf-reg (rv-float-reg rv-c-reg)
   ;; ((cf-reg-value :type '(unsigned-byte 3) :reader get-cf-reg-val :initarg :cfval))
   () )
 
-(defclass rv-f-temp-reg (rv-f-reg rv-temp-reg) ())
-(defclass rv-f-save-reg (rv-f-reg rv-save-reg) ())
-(defclass rv-f-arg-reg (rv-f-reg rv-arg-reg) ())
+(defclass rv-f-temp-reg (rv-float-reg rv-temp-reg) ())
+(defclass rv-f-save-reg (rv-float-reg rv-save-reg) ())
+(defclass rv-f-arg-reg (rv-float-reg rv-arg-reg) ())
 
 
 (defclass rv-cf-save-reg (rv-cf-reg rv-f-save-reg) ())
@@ -186,22 +203,32 @@
   (f28 'rv-f-temp-reg 28) (f29 'rv-f-temp-reg 29) (f30 'rv-f-temp-reg 30)
   (f31 'rv-f-temp-reg 31)
 
-  (ft0 'rv-f-temp-reg 0) (ft1 'rv-f-temp-reg 1) (ft2 'rv-f-temp-reg 2)
-  (ft3 'rv-f-temp-reg 3) (ft4 'rv-f-temp-reg 4) (ft5 'rv-f-temp-reg 5)
-  (ft6 'rv-f-temp-reg 6) (ft7 'rv-f-temp-reg 7) (ft8 'rv-f-temp-reg 28)
-  (ft9 'rv-f-temp-reg 29) (ft10 'rv-f-temp-reg 30) (ft11 'rv-f-temp-reg 31)
+  ;; (ft0 'rv-f-temp-reg 0) (ft1 'rv-f-temp-reg 1) (ft2 'rv-f-temp-reg 2)
+  ;; (ft3 'rv-f-temp-reg 3) (ft4 'rv-f-temp-reg 4) (ft5 'rv-f-temp-reg 5)
+  ;; (ft6 'rv-f-temp-reg 6) (ft7 'rv-f-temp-reg 7) (ft8 'rv-f-temp-reg 28)
+  ;; (ft9 'rv-f-temp-reg 29) (ft10 'rv-f-temp-reg 30) (ft11 'rv-f-temp-reg 31)
 
-  (fa0 'rv-cf-arg-reg 10) (fa1 'rv-cf-arg-reg 11) (fa2 'rv-cf-arg-reg 12)
-  (fa3 'rv-cf-arg-reg 13) (fa4 'rv-cf-arg-reg 14) (fa5 'rv-cf-arg-reg 15)
-  (fa6 'rv-f-arg-reg 16) (fa7 'rv-f-arg-reg 17)
+  ;; (fa0 'rv-cf-arg-reg 10) (fa1 'rv-cf-arg-reg 11) (fa2 'rv-cf-arg-reg 12)
+  ;; (fa3 'rv-cf-arg-reg 13) (fa4 'rv-cf-arg-reg 14) (fa5 'rv-cf-arg-reg 15)
+  ;; (fa6 'rv-f-arg-reg 16) (fa7 'rv-f-arg-reg 17)
 
-  (fs0 'rv-cf-save-reg 8) (fs1 'rv-cf-save-reg 9)
-  (fs2 'rv-f-save-reg 18) (fs3 'rv-f-save-reg 19) (fs4 'rv-f-save-reg 20)
-  (fs5 'rv-f-save-reg 21) (fs6 'rv-f-save-reg 22) (fs7 'rv-f-save-reg 23)
-  (fs8 'rv-f-save-reg 24) (fs9 'rv-f-save-reg 25) (fs10 'rv-f-save-reg 26)
-  (fs11 'rv-f-save-reg 27)
+  ;; (fs0 'rv-cf-save-reg 8) (fs1 'rv-cf-save-reg 9)
+  ;; (fs2 'rv-f-save-reg 18) (fs3 'rv-f-save-reg 19) (fs4 'rv-f-save-reg 20)
+  ;; (fs5 'rv-f-save-reg 21) (fs6 'rv-f-save-reg 22) (fs7 'rv-f-save-reg 23)
+  ;; (fs8 'rv-f-save-reg 24) (fs9 'rv-f-save-reg 25) (fs10 'rv-f-save-reg 26)
+  ;; (fs11 'rv-f-save-reg 27)
   )
 
+(def-multiple-constants ;; define aliases
+    ;; temporary floating point registers
+  (ft0 f0) (ft1 f1) (ft2 f2) (ft3 f3) (ft4 f4) (ft5 f5) (ft6 f6) (ft7 f7)
+  (ft8 f28) (ft9 f29) (ft10 f30) (ft11 f31)
+    ;; argument floating point registers
+  (fa0 f10) (fa1 f11) (fa2 f12) (fa3 f13) (fa4 f14) (fa5 f15) (fa6 f16) (fa7 f17)
+    ;; saved floating point registers
+  (fs0 f8) (fs1 f9)(fs2 f18) (fs3 f19) (fs4 f20) (fs5 f21) (fs6 f22) (fs7 f23)
+  (fs8 f24) (fs9 f25) (fs10 f26) (fs11 f27)
+    )
 
 (defun export-e-regs ()
   "Export names of the E module base registers (x0-x15) and their aliases"
