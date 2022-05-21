@@ -34,6 +34,9 @@
      ,@(loop for i in constant-lists collect
              `(defconstant ,@i))))
 
+(defun ascdr (obj alist)
+  (cdr (assoc obj alist))
+
 (defmacro def-keyword-assoc
          (name (alist &optional (error-string "is not a valid keyword")) )
   (let ((error-output
@@ -69,9 +72,105 @@
 ;;   (intern (apply #'concatenate 'string (mapcar #'string syms)) "KEYWORD")
 ;; ))
 
+(defun hash-create (pairs &key (test #'equal))
+  "Create a hash table with limited syntax:
+     (hash `((\"name\" \"andrew\") (\"city\" \"santa cruz\")))
+   which would otherwise be:
+     (let ((hash (make-hash-table :test #'equal)))
+       (setf (gethash \"name\" hash) \"andrew\")
+       (setf (gethash \"city\" hash) \"santa cruz\")
+       hash)
+   yuck city."
+  (let ((hash (make-hash-table :test test)))
+    (dolist (pair pairs)
+      (setf (gethash (car pair) hash) (cadr pair)))
+    hash))
+
+(defmacro hash (&rest pairs)
+  "Extends hash-create syntax to make it nicer."
+  `(hash-create
+    (list ,@(loop for pair in pairs collect
+                                    (list 'list (car pair) (cadr pair))))))
+
+(defun string-bytes-list (string &optional (encoding :cl))
+  (let ((str-list (map 'list #'char-code string)))
+  (case encoding
+    ((cl:or :a :ascii)
+     (assert (every #'(lambda (x) (typep x '(unsigned-byte 7))) str-list) ()
+             "char-code-list: Some characters in ~a are not ascii" string)
+     str-list)
+     ((cl:or :cl :norm) str-list) ;; TODO: needs to return bytes
+     ;; ((cl:or :utf :utf-16)
+     ;;  (apply #'concatenate 'list
+     ;;         (mapcar
+     ;;          #'(lambda (x) (if (< x 127)
+     ;;                            (list (logand (ash x -8) #xFF)
+     ;;                                  (logand x #xFF))
+     ;;                           (list x))
+     ;;          str-list))))
+     ;; ((cl:or :utf32 :utf-32)
+     ;; ;; TODO: full 32bit unicode for usb?
+     ;; ;;  see logan output on analyser/wireshark
+     ;; )
+     ((cl:or :usb-ucs)
+      ;; (apply #'concatenate 'list
+      (apply #'concatenate 'list
+             (mapcar
+              #'(lambda (x) (list ;; for usb
+                             (logand x #xFF) ;; lsb first
+                             (logand (ash x -8) #xFF) ;; msb second
+                             ))
+              str-list)))
+     ((cl:or :ucs2 :ucs)
+      (apply #'concatenate 'list
+             (mapcar
+              #'(lambda (x) (list (logand (ash x -8) #xFF)
+                                  (logand x #xFF)
+                                  ))
+              str-list)))
+
+     )))
 
 
-        ;;;; Dispatch read macros for twos complement numbes ;;;;
+ ;; NOTE: watch does it need bit-length or should it 'cut' num?
+(defun twos-complement-int (num bit-length)
+  "Return the twos complement of the number 'num' within the range of 'bit-length"
+  (assert (cl:and (typep num 'integer) (<= (integer-length num) bit-length)) ()
+                 "twos-complement-int: ~~
+                  ~a is either not an integer or out of the ~a bit range"
+                 num bit-length )
+  (let ((sign-bit (ldb-test (byte 1 (- bit-length 1)) num)))
+    (cond
+            ;; ((cl:not (typep num 'integer))
+            ;;  (error "~A  Value is not rational: " num))
+            ;; ((> len bit-length)
+            ;;   (error "~A  Value out of range: " num))
+            ((cl:and (null sign-bit) (plusp num))
+            ;; positive numbers are ok if less than register-length
+             num)
+            ((cl:and sign-bit (plusp num))
+            ;; if sign bit is set for positive numbers, complement
+             (- (logxor #xffffffff (- num 1))))
+            ((cl:and (null sign-bit) (minusp num))
+            ;; large negative numbers whose complement bits are higher than the
+            ;; MSB of the register-length in common lisp number representation
+            ;; need to be complemented as well by adding them to max bit-length + 1
+             (+ (expt 2 bit-length) num))
+            ((cl:and sign-bit (minusp num))
+            ;; negative numbers smaller than register length
+            ;; are already complemented properly
+             num)
+             (t (error "twos-complement-int: Error with number ~A." num)))))
+
+(defun tcv (num)
+  "Return the 32 bit twos complement of num"
+  (twos-complement-int num 32))
+
+(defun tcz (num)
+  "Return the 64 bit twos complement of num"
+  (twos-complement-int num 64))
+
+        ;;;; Dispatch read macros for twos complement numbers ;;;;
 
 ;; RISC-V assemblers take only positive whole number hexidecimal and binary,
 ;; (at least in the integer modules). These reader macros convert them from the
