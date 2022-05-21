@@ -34,6 +34,24 @@
 )
   )
 
+(defun var-rv (name val &optional (type :vait))
+  (set-label name)
+  (case type
+    ((cl:or :byte :b) (emit-byte val)); (align-gen))
+    ((cl:or :jait :j) (emit-jait val)); (align-gen))
+    ((cl:or :vait :v) (emit-vait val)); (align-gen))
+    ((cl:or :zait :z) (emit-zait val)); (align-gen))
+    ((cl:or :yait :y) (emit-yait val)); (align-gen))
+    (t (error "named-emit: Unknown type ~a." type))
+  ))
+
+
+(defmacro multiple-var-rv (&rest var-lists)
+  `(progn
+     ,@(loop for in in var-lists collect
+             `(var-rv ,@i)))
+  )
+
 
 ;;TODO: unsignied?
 ;;NOTE: align changes based on inclusion of compressed instruction set
