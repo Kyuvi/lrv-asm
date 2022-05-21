@@ -5,9 +5,13 @@
   (:nicknames :clrv)
   ;; (:use :cl )
   (:export
-   #:export-mutiple-constants #:def-multiple-constants #:def-keyword-assoc
-   #:unintern-list #:unexport-list
-   #:symbol-append #:keyword-append
+           #:export-mutiple-constants #:def-multiple-constants
+           #:ascdr #:def-keyword-assoc
+           #:unintern-list #:unexport-list
+           #:symbol-append #:keyword-append
+           #:hash-create #:hash
+           #:string-bytes-list
+           #:tcomp-int #:tcv #:tcz
    ))
 
 (in-package "CLRV-UTILS")
@@ -42,11 +46,23 @@
   (let ((error-output
           (concatenate 'string (string-downcase name) ": ~a " error-string)))
     `(defun ,name (kii)
-       (let* ((kii-assoc ,alist)
-              (kii-pair (assoc kii kii-assoc)))
-         (if kii-pair
-             (cadr kii-pair)
-             (error ,error-output kii))))))
+       ;; (let* ((kii-assoc ,alist)
+       ;;        (kii-pair (assoc kii kii-assoc)))
+         ;; (assert kii-pair () ,error-ouput kii)
+         ;; (cdr kii-pair)
+       (let (kii-cdr (cdr (assoc kii ,alist)))
+         (assert kii-cdr () ,error-ouput kii)
+         kii-cdr
+
+         ;; (error ,error-output kii)
+         )))))
+
+;; (defmacro with-alist
+;; ((kii ret-nam alist &optional (error-string "is not a recognised keyword")
+;; &body body)
+
+;;   )
+
 
 (defmacro unintern-list (symbol-list );; &optional (pckg *package*))
   "Unintern all items in 'symbol-list' from their original package"
@@ -62,6 +78,7 @@
 
 (defun symbol-append (&rest syms)
   (intern (apply #'concatenate 'string (mapcar #'string syms))))
+  ;; (make-symbol (apply #'concatenate 'string (mapcar #'string syms))))
 
 (defun keyword-append (&rest syms)
   (intern (apply #'concatenate 'string (mapcar #'string syms)) "KEYWORD"))
