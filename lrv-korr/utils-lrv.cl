@@ -8,6 +8,12 @@
       (align 4)))
 
 
+(defun set-addressed-label (name address &optional (env *env*))
+  "(set-addressed-label name address [env])
+   Set label 'name' to address 'address'.
+   env defaults to *env*."
+  (env-set-label env name address))
+
 ;; (defun set-addressed-label (name address &optional (env *env*))
 ;;   (env-set-label env label address))
 
