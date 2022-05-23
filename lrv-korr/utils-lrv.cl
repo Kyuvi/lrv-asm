@@ -64,7 +64,7 @@
     ((cl:or :vait :v) (apply #'emit-vait numz)); (align-gen))
     ((cl:or :zait :z) (apply #'emit-zait numz)); (align-gen))
     ((cl:or :yait :y) (apply #'emit-yait numz)); (align-gen))
-    (t (error "named-emit: Unknown type ~a." type))
+    (t (error "svec-rv: Unknown type ~a." type))
     )
   ;; (align-gen)
   )
