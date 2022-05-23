@@ -153,12 +153,91 @@
   ))))
 
 ;;TODO: unsignied?
-;; (defun struct-rv (name cell-size &rest var-pairs)
-(defun struct-rv (name &rest vars) ;; vars = (name value &optional cell-size-keyword)
-  (set-label name)
+;; (defun srec-rv (name cell-size &rest var-pairs)
+(defun srec-rv (name &rest vars) ;; vars = (name value &optional cell-size-keyword)
+  (flet ((create-slot (struct-name slot-name)
+           ;; (intern (concatenate 'string
+                                ;; (string struct-name) "." (string slot-name)))
+           (symbol-append struct-name '|.| slot-name)
+           ))
+    (set-label name)
+    (loop for i in vars do
+      (cond ((= (length i) 3)
+             (svec-rv (set-label (create-slot name (car i)))
+                      (caddr i) (cadr i)))
+            ;; (case (caddr i)
+            ;;   ((cl:or :byte :b)
+            ;;    (set-label (create-slot name (car i)))
+            ;;    (emit-byte (cadr i)))
+            ;;   ((cl:or :jait :j)
+            ;;    (set-label (create-slot name (car i)))
+            ;;    (emit-jait (cadr i)))
+            ;;   ((cl:or :vait :v)
+            ;;    (set-label (create-slot name (car i)))
+            ;;    (emit-vait (cadr i)))))
+            ((= (length i) 2)
+             (svec-rv (set-label (create-slot name (car i)))
+                      :vait (cadr i)))
+            ;; (set-label (create-slot name (car i)))
+            ;; (emit-vait (cadr i)))
+          (t (error "srec-rv: ~a is not valid srec-rv variable" i))))
+))
 
-)
 
+(defstruct rv-srec (vars)) ;; :type list))
+
+(defmacro def-srec-rv (name &rest vars)
+  (let* (; (get-name (symbol-append 'get- name '-offset))
+         ;; (get-name (symbol-append 'srec- name '-offset))
+         (get-name (symbol-append name '-offset))
+         ;; (srec-name (symbol-append name '-rv-srec))
+         (slot-list (mapcar #'(lambda (x) (if (cl:not (listp x)) x (car x)))
+                            vars))
+         (type-list (mapcar #'(lambda (x)
+                                (if (cl:or (cl:not (listp x))
+                                           (cl:not (keywordp (car (last x)))))
+                                                   :vait
+                                                   (car (last x))))
+                            vars))
+         (size-list (mapcar
+                     #'(lambda (x)
+                         (case x
+                           ((cl:or :b :byte ) 1)
+                           ((cl:or :j :jait ) 2)
+                           ((cl:or :v :vait ) 4)
+                           (t (error "def-srec-rv: ~a is not a valid risc-v size"
+                                     x))))
+                              type-list))
+         (offset-list (cons 0 (butlast
+                               (reverse (maplist #'(lambda (x)
+                                                     (apply #'+  x ))
+                                                 (reverse size-list))))))
+         (keyword-list (mapcar #'(lambda (x) (intern (string x) "KEYWORD"))
+         ;; (keyword-list (mapcar #'(lambda (x) (intern (symbol-name x) "KEYWORD"))
+                               slot-list))
+         (offset-assoc (pairlis keyword-list offset-list) ))
+    `(progn
+      (defconstant ,name (make-rv-srec :vars ',vars))
+      (defun ,get-name (key)  ;; TODO: export?
+        (assert (member key ,keyword-list) ()
+                "~a not a valid slot key for simple risc-v record ~a. ~%~
+                Available slots are ~a"
+                ;; key ,srec-name)
+                key ,name ,keyword-list)
+        (cdr (assoc key ',offset-assoc)))
+      ))
+  )
+
+
+
+
+;; TODO: change to init-srec-rv?
+(defun emit-srec-rv (name srec-type)
+  (assert (rv-srec-p srec-type) ()
+          "emit-srec-rv: ~a is not a valid simple risc-v record." srec-type)
+  (srec-rv name (rv-srec-vars srec-type))
+  ;; (srec-rv name srec-type)
+  )
 
 (defmacro with-label (label &body body)
   (when (and (listp label) (eql (first label) 'quote))
