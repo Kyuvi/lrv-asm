@@ -69,15 +69,42 @@
   ;; (align-gen)
   )
 
-(defun str-rv (name string &optional (nul t))
+(defun str-rv (name string &optional (encoding :ascii))
+  "(str-rv name string [encoding-key])
+   Emit a string (vector) into the environment.
+   Encoding-key can be one of :ascii, :ucs2, :usb-ucs, :cl
+   Encoding-key defaults to :ascii"
  ;; (dolist (byte (map 'list #'char-code
   ;; (apply #'emit-byte (map 'list #'char-code string)))
-  (set-label name)
-  (if nul
-      (apply #'emit-byte (append (map 'list #'char-code string) '(0)))
-      (apply #'emit-byte (map 'list #'char-code string)))
+  ;; (let ((str-list (map 'list #'char-code string)))
+  (let ((str-list (string-bytes-list string encoding)))
+    ;; (set-label name)
+    ;; (apply #'emit-byte
+    ;;        (if null-term
+    ;;            (append str-list '(0))
+    ;;            str-list))
+    (apply #'svec-rv name :byte
+           ;; (if null-term
+               ;; (append str-list '(0))
+               str-list))
   ;; (align-gen)
-      )
+  )
+;; )
+
+(defun ascis (name string)
+  "Emit a string (vector) of ascii bytes into the enviroment"
+  ;; (if (every #'(lambda (x) (< (char-code x) 127)) string)
+      (str-rv name string) ; nil)
+      ;; (error "Some characters in ~a are not ascii" string)))
+  )
+ 
+(defun asciz (name o-str)
+  "Emit a string (vector) of ascii bytes terminated by a '0' byte into the enviroment"
+  ;; (if (every #'(lambda (x) (< (char-code x) 127)) string)
+      (str-rv name (concatenate 'string o-str (string #\null)))
+      ;; (error "Some characters in ~a are not ascii" string)))
+  )
+
 
 (defun encode-num (num)
   ;; (loop for x upfrom 8 by 4)
