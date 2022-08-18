@@ -136,13 +136,12 @@
 (defun li (rd cimm)
  "(li rd cimm)
   Load Immediate: Load signed immediate into rd.
-  assumes use of #h or #y read macros to avoid twos complement errors.
+  Assumes use of #h or #y read macros to avoid twos complement errors.
   Uses a compressed instruction if...
-  crd ≠ x0 and 0 ≠ cimm32 <= 6 bits :c.li.
-  crd ≠ x0|x2 and  0 ≠ cimm32 <= 18 bits :c.lui [and optionally c.li or i.addi]
-
-"
-  (cond ((cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm)) ) ;; (cregp rd))
+  crd ≠ x0 and 0 ≠ cimm32 <= 6 bits :c.li
+  crd ≠ x0|x2 and  0 ≠ cimm32 <= 18 bits :c.lui [and optionally c.li or i.addi]."
+  (cond ((cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm))
+                 (cl:not (zerop (regno rd)))) ;; (cregp rd))
          (c.li rd cimm))
         ((cl:and (integerp cimm) (immp cimm 12))
          (i.addi rd 'x0 cimm))
@@ -221,10 +220,11 @@
 (defun liu (rd cimm)
  "(liu rd cimm)
   Load Immediate Unsigned: Load unsigned immediate into rd
-  (NOTE: Depreciated in favour of using #h and #y read macros with li)
+  (NOTE: Deprecated in favour of using #h and #y read macros with li)
   Uses a compressed instruction if...
   crs1 = x0 and 0 ≠ cimm32 <= 6 bits :c.li"
-   (if (cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm)) ) ;; (cregp rd))
+  (if (cl:and (integerp cimm) (immp cimm 6) (cl:not (zerop cimm))
+              (cl:not (= (regno rd) 0))) ;; (cregp rd))
        (c.li rd cimm)
       (let ((addr *pc*)
             (imm12 (delay :imm12 (cimm) (logand cimm #x00000fff)))
