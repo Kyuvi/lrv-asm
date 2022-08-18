@@ -22,8 +22,9 @@
 (defclass symbol-table ()
   ((symbol-table :reader env-symbol-table
                  :initform (make-hash-table :test 'equal)))
+                 ;; :initform (make-hash-table :test 'equalp)))
   (:documentation
-   "symbol-table class with a single symbol-table slot
+   "Symbol-table class with a single symbol-table slot
     containing a hash table for labels (and other symbols?)")
   )
 
@@ -236,7 +237,7 @@
 
 (defgeneric env-set-label (env symbol &optional address)
   (:documentation "Sets the address of a label within the environment.
-  If not supplied the current address is used."))
+  If address is not supplied, the current address is used."))
 
 (defgeneric env-emit-ins (env vector)
   (:documentation "Emit an instruction into the assembly environment. This is a
@@ -292,10 +293,12 @@
 ;; These seem to be used to "clone" an environment (i.e. a basic-env)
 ;; that has been instanciated already and then "inject" code
 ;; into that environment (i.e. for pocedures)
-;; it might also add a second (temprorary?) symbol table
+;; it might also add a second (temprorary?) symbol table for "local variables".
 
 (defclass delegate-env ()
-  ((parent :reader env-parent :initarg :parent)))
+  ((parent :reader env-parent :initarg :parent))
+  (:documentation "Delegated environment which takes a parent environment in ~
+                   its single slot"))
 
 (defmethod env-address ((env delegate-env))
   (env-address (env-parent env)))
@@ -320,6 +323,8 @@
                           &optional (address (env-address env)))
   (env-set-label (env-parent env) symbol address))
 
+;; add new symbol table? read from both(?) delegate enviroment and local symbol table?
+;; two slots, :parent and :symbol-table?
 (defclass local-symbol-table (delegate-symbol-lookup symbol-table) ())
 
 (defmethod env-find-label ((env local-symbol-table) symbol)
@@ -355,6 +360,8 @@
   (dolist (yait yaits) (env-emit *env* (encode-yait yait))))
 
 (defun advance-to (offset &optional (fill-byte #xff))
+  "(advance-to offset [fill-byte])
+   Advance to address 'offset', filling code-vector with 'fill-byte'."
   (let ((delta (- offset (env-address *env*))))
     (when (< delta 0)
     (error "Cannot advance to ~x, it is less than the current enviroment address (~x)"
@@ -362,6 +369,9 @@
     (env-emit *env* (make-array delta :initial-element fill-byte))))
 
 (defun align (alignment &optional (fill-byte #xff))
+  "(align alignment [fill-byte])
+   Align code vector to a multiple of 'alignment' bytes,
+   filling code vector with 'fill-byte'."
   (advance-to (* alignment (ceiling (env-address *env*) alignment)) fill-byte))
 
 ;; Within an assembly environment, either returns the label position
@@ -386,6 +396,10 @@
     (delay :label-difference (start end)
       (- end start))))
 
+(defun label-inc (label-name offset)
+  (let ((start-addr (label label-name)))
+    (delay :label-inc (start-addr)
+      (+ start-addr offset))))
 
 
 ;; (defmacro with-label (label &body body)
