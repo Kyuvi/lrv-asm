@@ -35,15 +35,19 @@
   Advances one cycle and advances *pc* by 2."
   (c.nop))
 
-(defun mv (rd rs2)
- "(mv rd rs2)
-  Move contents of register rs2 to rd."
-  (c.mv rd rs2))
+(defun mv (rd rs)
+ "(mv rd rs)
+  Move contents of register 'rs' to 'rd'.
+  rd ≠ x0.
+  if rs = 0 uses c.li"
+  (if (eq (regno rs) 0)
+      (c.li rd 0)
+      (c.mv rd rs)))
 
-(defun jr (rs1)
- "(jr rs1)
-  Jump to address in register (jal x0 r1 0)."
-  (c.jr rs1))
+(defun jr (rs)
+ "(jr rs)
+  Jump to address in register 'rs' (jalr x0 rs 0)."
+  (c.jr rs))
 
 (defun jc (imm)
  "(jc imm)
@@ -116,8 +120,8 @@
 (defun auipc (rd imm32)
  "(auipc rd imm32)
   Add Upper Immediate to PC: Add the immediate
-  (which should be a multiple of 4096 or #x1000) the program counter
-  and load the result into the register."
+  (which should be a multiple of 4096 or #x1000) to the program counter
+  and load the result into register 'rd'."
   (i.auipc rd imm32)
   )
 
@@ -282,7 +286,7 @@
   Shift left logical immediate: Shift the contents of crs1 left by the immediate
   value (between 0 and 31) and load crd with result.
   Uses a compressed instruction if...
-  crd = crs1 and 0 ≠ imm :c.slli ."
+  crd = crs1 and 0 ≠ imm :c.slli."
   (if (cl:and (integerp cimm5) (cl:not (zerop cimm5)) (eq crd crs1) )
       (c.slli crd cimm5)
       (i.slli crd crs1 cimm5))
@@ -304,7 +308,7 @@
   Shift right arithmetic immediate: Shift the contents of rs1 right by the
   immediate value (between 0 and 31) keeping the sign bit and load crd with result.
   Uses a compressed instruction if...
-  crd = crs1 and 0 ≠ imm :c.srli ."
+  crd = crs1 and 0 ≠ imm :c.srli."
   (if (cl:and (integerp cimm5) (cl:not (zerop cimm5)) (eq crd crs1) (cregp crd) )
       (c.srai crd cimm5)
       (i.srai crd crs1 cimm5))
@@ -331,7 +335,7 @@
  "(sub crd crs1 crs2)
   Load crd with the result of subracting the contents of reg2 from reg1.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15 = crs2 :c.sub "
+  crd = crs1 = x8..x15 = crs2 :c.sub."
   (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
       (c.sub crd crs2)
       (i.sub crd crs1 crs2))
@@ -466,10 +470,10 @@
   crd = x1, crs1 ≠ x0 and cimm = 0 :c.jalr ."
   (cond ((cl:and (integerp cimm12) (zerop cimm12)
                  (zerop (regno crd)) (cl:not (zerop (regno crs1))))
-         (c.jr rs1))
+         (c.jr crs1))
         ((cl:and (integerp cimm12) (zerop cimm12)
                  (= (regno crd) 1) (cl:not (zerop (regno crs1))))
-         (c.jalr rs1))
+         (c.jalr crs1))
         (t (i.jalr crd crs1 cimm12))
   )) ;cc
 
@@ -523,8 +527,10 @@
          (ofst (offset cimm)))
     (cond ((cl:and (numberp cimm) (immp ofst 12) (zerop (logand ofst #x1)))
            (c.j cimm))
+           ;; (c.j ofst))
           ((cl:and (numberp cimm) (immp ofst 20) (zerop (logand ofst #x1)))
-           (i.jal 'x0 cimm))
+           (i.jal 'x0 cimm))  ;; this does the the immediate correction
+           ;; (i.jal 'x0 ofst))
           ((cl:and (numberp cimm) (immp ofst 32)
                    (zerop (logand ofst #x00000fff)))
            (i.auipc treg ofst)
