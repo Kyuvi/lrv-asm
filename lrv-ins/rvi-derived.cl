@@ -37,10 +37,15 @@
 
         ;;;; Integer Computational Instructions ;;;;
 
-(defun seqz (rd rs1)
- "(seqz rd rs1)
-  Set rd to one if rs1 is equal to zero (otherwise nil)"
-  (i.sltiu rd rs1 0))
+;; (defun seqz (rd rs1)
+;;  "(seqz rd rs1)
+;;   Set rd to one if rs1 is equal to zero (otherwise nil)"
+;;   (i.sltiu rd rs1 0))
+
+(defun seqz (rd rs)
+ "(seqz rd rs)
+  Set rd to one if rs is equal to zero"
+  (i.sltiu rd rs 1))
 
 (defun not (rd rs1)
  "(not rd rs1)
@@ -69,11 +74,6 @@
  "(neg rd rs)
   Stores the negation of the contents of rs in rd"
   (i.sub rd 'x0 rs))
-
-(defun seqz (rd rs)
- "(seqz rd rs)
-  Set rd to one if rs is equal to zero"
-  (i.sltiu rd rs 1))
 
 (defun snez (rd rs)
  "(snez rd rs)
@@ -320,7 +320,7 @@
 ;; TODO: is it possible to add comprsessed instructions? needs test c.jal offset 12?
 (defun call (imm &optional (reg 'x1))
  "(call imm [reg x1])
-  Call far away subroutine (pseudoinstruction for auipc reg and jalr reg)"
+  Call far away subroutine (pseudoinstruction for auipc reg and jalr reg reg)"
   (let* ((addr *pc*)
          (ofst (offset imm))
     ;;      )
@@ -357,7 +357,7 @@
 (defun tail (imm &optional (treg 'x6))
  "(tail imm [treg 'x6])
   Tail call far away subroutine
-   (pseudoinstruction for  (auipc x6) and (jalr x0 x6))"
+   (pseudoinstruction for  (auipc treg) and (jalr x0 treg))"
   (let* ((addr *pc*)
          (ofst (offset imm))
     ;;      )
