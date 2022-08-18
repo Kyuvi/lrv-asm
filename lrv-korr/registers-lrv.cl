@@ -1,8 +1,8 @@
 (defpackage "RV-REGISTERS"
+  (:nicknames :rvreg)
   (:documentation
    "Binding of register names to instances of register classes with
     corresponding values")
-  (:nicknames :rvreg)
   (:use :cl ) ;; :clrv)
   (:import-from :clrv def-multiple-constants )
   ;; (:shadowing-import-from :clrv def-multiple-constants )
@@ -28,7 +28,7 @@
    ;; ((c-reg-value :type '(unsigned-byte 3) :accessor get-c-reg-val :initarg :cval))
   )
 
-(defmethod initialize-instance :after ((r rv-c-reg) &rest initargs)
+(defmethod initialize-c-reg :after ((r rv-c-reg) &rest initargs)
   "Method to initialize c-reg-value slot from reg-value slot"
   ;; ;; Works on slots defined as readers or accessors
   ;; (setf (slot-value r 'c-reg-value)
