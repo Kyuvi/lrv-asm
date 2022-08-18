@@ -362,11 +362,18 @@
  "(xor crd crs1 crs2)
   Load crd with the result of the logical xor of rs1 and rs2.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15 = crs2 :c.xor "
-  (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
-      (c.xor crd crs2)
-      (i.xor crd crs1 crs2))
+  crd = crs1 = x8..x15 = crs2 :c.xor
+  crd = crs2 = x8..x15 = crs1 :c.xor."
+  ;; (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+  ;;     (c.xor crd crs2)
+  (cond ((cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+         (c.xor crd crs2))
+        ((cl:and (eq crd crs2) (cregp crd) (cregp crs1))
+         (c.xor crd crs1))
+        (t
+         (i.xor crd crs1 crs2))
    ) ;c
+)
 
 (defun srl (rd rs1 rs2)
  "(srl rd rs1 rs2)
@@ -387,22 +394,35 @@
  "(or crd crs1 crs2)
   Load crd with the result of the logical or of reg1 and reg2.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15 = crs2 :c.or. "
-  (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
-      (c.or crd crs2)
-      (i.or crd crs1 crs2))
+  crd = crs1 = x8..x15 = crs2 :c.or.
+  crd = crs2 = x8..x15 = crs1 :c.or."
+  ;; (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+  ;;     (c.or crd crs2)
+  (cond ((cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+         (c.or crd crs2))
+        ((cl:and (eq crd crs2) (cregp crd) (cregp crs1))
+         (c.or crd crs1))
+        (t
+         (i.or crd crs1 crs2))
   ) ;c
+)
 
 (defun and (crd crs1 crs2)
  "(and crd crs1 crs2)
   Load crd with the result of the logical and of reg1 and reg2.
   Uses a compressed instruction if...
-  crd = crs1 = x8..x15 = crs2 :c.and. "
-  (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
-      (c.and crd crs2)
-      (i.and crd crs1 crs2))
+  crd = crs1 = x8..x15 = crs2 :c.and.
+  crd = crs2 = x8..x15 = crs1 :c.and."
+  ;; (if (cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+  ;;     (c.and crd crs2)
+  (cond ((cl:and (eq crd crs1) (cregp crd) (cregp crs2))
+         (c.and crd crs2))
+        ((cl:and (eq crd crs2) (cregp crd) (cregp crs1))
+         (c.and crd crs1))
+        (t
+         (i.and crd crs1 crs2))
   ) ;c
-
+)
         ;;;; Jumps and branches ;;;;
 
 (defun j (cimm)
@@ -537,13 +557,21 @@
   (The value of the address following the instruction)
   to form the destination address.
   Uses a compressed instruction if...
-  crs1 = x8..x15, crs2 = x0 and cimm <= 8 bit multiple of 2 :c.beqz ."
+  crs1 = x8..x15, crs2 = x0 and cimm <= 8 bit multiple of 2 :c.beqz
+  crs2 = x8..x15, crs1 = x0 and cimm <= 8 bit multiple of 2 :c.beqz."
   (let ((ofst (offset cimm)))
-    (if (cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+    ;; (if (cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+    ;;             (zerop (regno crs2)) (cregp crs1))
+    ;;     (c.beqz crs1 cimm)
+    (cond ((cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
                 (zerop (regno crs2)) (cregp crs1))
-        (c.beqz crs1 cimm)
-        (i.beq crs1 crs2 cimm)))
-   );) ;c
+           (c.beqz crs1 cimm))
+          ((cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+                   (zerop (regno crs1)) (cregp crs2))
+           (c.beqz crs2 cimm))
+          (t
+           (i.beq crs1 crs2 cimm)))
+   ));) ;c
 
 (defun bne (crs1 crs2 cimm)
  "(bne crs1 crs2 cimm)
@@ -552,13 +580,21 @@
   (The value of the address following the instruction)
   to form the destination address.
   Uses a compressed instruction if...
-  crs1 = x8..x15, crs2 = x0 and cimm <= 8 bit multiple of 2 :c.bnez ."
+  crs1 = x8..x15, crs2 = x0 and cimm <= 8 bit multiple of 2 :c.bnez
+  crs2 = x8..x15, crs1 = x0 and cimm <= 8 bit multiple of 2 :c.bnez."
   (let ((ofst (offset cimm)))
-    (if (cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+    ;; (if (cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+    ;;             (zerop (regno crs2)) (cregp crs1))
+    ;;     (c.bnez crs1 cimm)
+    (cond ((cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
                 (zerop (regno crs2)) (cregp crs1))
-        (c.bnez crs1 cimm)
-        (i.bne crs1 crs2 cimm)))
-   );) ;c
+           (c.bnez crs1 cimm))
+          ((cl:and (integerp cimm) (immp ofst 8) (zerop (logand ofst #x1))
+                   (zerop (regno crs1)) (cregp crs2))
+           (c.bnez crs2 cimm))
+          (t
+           (i.bne crs1 crs2 cimm)))
+   ));) ;c
 
 
 (defun beqz (crs1 cimm)
