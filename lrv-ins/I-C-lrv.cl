@@ -69,9 +69,10 @@
   Sign-extended 12-bit immediate to register length and add to reg1
   placing the result in crd. Uses a compressed instruction if...
   crd = crs1 and  0 ≠ cimm12 <= 6 bits :c.addi
-  crd ≠ x0 = crs1 and 0 ≠ cimm32 <= 6 bits :c.li
-  crd = crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 16 :c.addi16sp
-  crd = x8..x15, crs1 = x2 and 0 ≠ imm <= 10 bit multiple of 4 :c.addi4spn "
+  crd ≠ x0 = crs1 and cimm32 <= 6 bits :c.li
+  crd = crs1 = x2 and 0 ≠ cimm12 <= 10 bit multiple of 16 :c.addi16sp
+  crd = x8..x15, crs1 = x2 and 0 ≠ cimm12 <= 10 bit multiple of 4 :c.addi4spn
+  crd ≠ x0 ≠ crs1 and cimm12 = 0 :c.mv."
   (cond
     ((cl:and (integerp cimm12) (immp cimm12 6) (cl:not (zerop cimm12))
              (eq crd crs1) (cl:not (zerop (regno crd))) (cl:not (= (regno crd) 2)))
@@ -87,6 +88,9 @@
              ;; (eq crd crs1) (cregp crd)  (cl:not (zerop cimm12)))
               (cregp crd) (= (regno crs1) 2)  (cl:not (zerop cimm12)))
      (c.addi4spn crd cimm12))
+    ((cl:and (integerp cimm12) (zerop cimm12)
+             (cl:not (zerop (regno crd))) (cl:not (zerop (regno crs1))))
+     (c.mv crd crs1))
     (t (i.addi crd crs1 cimm12)
       ))
 ) ;cccc
