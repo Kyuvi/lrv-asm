@@ -325,13 +325,21 @@
   Load crd with the sum of the contents of reg1 and reg2.
   Uses a compressed instruction if...
   crd = crs1 ≠ x0 ≠ crs2 :c.add
-  crd ≠ x0 ≠ crs2, crs1 = x0 :c.mv ."
+  crd = crs2 ≠ x0 ≠ crs1 :c.add
+  crd ≠ x0 ≠ crs2, crs1 = x0 :c.mv
+  crd ≠ x0 ≠ crs1, crs2 = x0 :c.mv."
   (cond ((cl::and (eq crd crs1) (cl:not (zerop (regno crd)))
                   (cl:not (zerop (regno crs2))))
          (c.add crd crs2))
+        ((cl::and (eq crd crs2) (cl:not (zerop (regno crd)))
+                  (cl:not (zerop (regno crs1))))
+         (c.add crd crs1))
         ((cl::and (cl:not (zerop (regno crd))) (zerop (regno crs1))
                   (cl:not (zerop (regno crs2))))
          (c.mv crd crs2))
+        ((cl::and (cl:not (zerop (regno crd))) (zerop (regno crs2))
+                  (cl:not (zerop (regno crs1))))
+         (c.mv crd crs1))
         (t (i.add crd crs1 crs2)))
   ) ;cc
 
