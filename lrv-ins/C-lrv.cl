@@ -233,7 +233,7 @@
 (defun c.mv (rd rs2)
  "(c.mv rd rs2)
   Move contents of rs2 to rd,
-  rd/rs2 ≠ 0."
+  rd/rs2 ≠ x0."
   (if (cl:and (not (zerop (regno rd))) (not (zerop (regno rs2))))
       (emit-jait (creg rd rs2 8 2))
       (rv-error "c.mv: Register x0 can not be used."))

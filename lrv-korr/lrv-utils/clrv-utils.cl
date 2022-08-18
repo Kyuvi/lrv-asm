@@ -76,6 +76,8 @@
      ,@(loop for i in symbol-list collect
              `(unexport ',i (symbol-package ',i) ))) )
 
+        ;;;; symbols ;;;;
+
 (defun symbol-append (&rest syms)
   (intern (apply #'concatenate 'string (mapcar #'string syms))))
   ;; (make-symbol (apply #'concatenate 'string (mapcar #'string syms))))
@@ -88,6 +90,8 @@
 ;;   (intern (apply #'concatenate 'string (mapcar #'string syms)))
 ;;   (intern (apply #'concatenate 'string (mapcar #'string syms)) "KEYWORD")
 ;; ))
+
+        ;;;; hash tables ;;;;
 
 (defun hash-create (pairs &key (test #'equal))
   "Create a hash table with limited syntax:
@@ -108,6 +112,10 @@
   `(hash-create
     (list ,@(loop for pair in pairs collect
                                     (list 'list (car pair) (cadr pair))))))
+
+
+
+        ;;;; strings ;;;;
 
 (defun string-bytes-list (string &optional (encoding :cl))
   (let ((str-list (map 'list #'char-code string)))
@@ -130,6 +138,7 @@
      ;; ;;  see logan output on analyser/wireshark
      ;; )
      ((cl:or :usb-ucs)
+      ;; TODO: assert correct characters?
       ;; (apply #'concatenate 'list
       (apply #'concatenate 'list
              (mapcar
@@ -139,6 +148,7 @@
                              ))
               str-list)))
      ((cl:or :ucs2 :ucs)
+      ;; TODO: assert correct characters?
       (apply #'concatenate 'list
              (mapcar
               #'(lambda (x) (list (logand (ash x -8) #xFF)
@@ -147,6 +157,8 @@
               str-list)))
 
      )))
+
+        ;;;; integers ;;;;
 
 
  ;; NOTE: watch does it need bit-length or should it 'cut' num?
