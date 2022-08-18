@@ -26,6 +26,8 @@
 (defun rv-error (txt &optional (addr *pc*))
   ; (princ "(pc=") (x16 *pc*) (princ ") ") (princ txt) (terpri))
   (error "Error at (pc=#x~4,'0x) ~a"  addr txt))
+  ;; (error (concatenate 'string "Error at (pc=#x~4,'0x)" txt) addr))
+
          ;; (x16 *pc*) txt))
   ;; (error "(pc=#x~a) ~a" (if (boundp 'addr) (x16 addr) (x16 *pc*)) txt))
 
@@ -79,7 +81,7 @@
                              ((integer 0 7) (+ n 10))
                              (t (rv-error "An a register needs to be between 0 and 7"))))
                       (#\S (typecase n
-                             ((integer 2 11) (+ n 16))
+                             ((integer 0 11) (if (< n 2) (+ n 8) (+ n 16)))
                              (t (rv-error "An s register needs to be between 0 and 11"))))
                       (#\T (typecase n
                              ((integer 0 6) (if (<= n 2) (+ n 5) (+ n 25)))
@@ -144,7 +146,7 @@
 (defun bits (x a &optional b)
   "Extract bitfield number a from x or read bits b to a of x
    (if b > a performs '(bits max b)')"
-  ;; (if b (ldb (byte (- a b) b) x)
+  ;; (if b (ldb (byte (+ (- a b) 1) b) x)
   ;;       (ldb (byte 1 a) x )))
   (if b
       (logand (ash x (- b)) (1- (ash 1 (- a b -1))))
