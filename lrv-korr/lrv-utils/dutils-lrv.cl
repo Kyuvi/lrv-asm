@@ -5,13 +5,13 @@
   (:nicknames :durv)
   (:use :cl :rvasm)
   (:export
-         #:tcomp #:splnum #:imm #:uimm
+         #:prn-tcomp #:splnum #:imm #:uimm
    ))
 
  (use-package :durv)
 (in-package :durv)
 
-(defun tcomp (num &optional (len 0))
+(defun prn-tcomp (num &optional (len 0))
   "Print the two's complememt binary representation of a number"
   (let* ((ilen (+ (integer-length num) 1))
          (olen (if (> ilen len) ilen len)))
