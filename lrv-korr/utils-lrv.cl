@@ -198,6 +198,7 @@
   (let* (; (get-name (symbol-append 'get- name '-offset))
          ;; (get-name (symbol-append 'srec- name '-offset))
          (get-name (symbol-append name '-offset))
+         ;; (get-name (symbol-append name '-ref))
          ;; (srec-name (symbol-append name '-rv-srec))
          (slot-list (mapcar #'(lambda (x) (if (cl:not (listp x)) x (car x)))
                             vars))
@@ -227,11 +228,15 @@
     `(progn
       (defconstant ,name (make-rv-srec :vars ',vars))
       (defun ,get-name (key)  ;; TODO: export?
-        (assert (member key ,keyword-list) ()
+        ,(format nil "~a: Offset function for the RISC-V simple record '~a'. ~@
+                      From which can be accessed the following records, shown ~
+                      in the format, ~% (record type). ~% ~s."
+                      get-name name (mapcar 'list keyword-list type-list))
+        (assert (member key ',keyword-list) ()
                 "~a not a valid slot key for simple risc-v record ~a. ~%~
                 Available slots are ~a"
                 ;; key ,srec-name)
-                key ,name ,keyword-list)
+                key ,name ',keyword-list)
         (cdr (assoc key ',offset-assoc)))
       ))
   )
