@@ -285,3 +285,25 @@
   "logical not zyte
    The lSB zyte value of the logical-not of 'x'"
   (lnot-imm x 64))
+
+(defun bitsv (num)
+  "Get the vait bits of 'num'"
+  (bits num 31 0))
+
+(defun bitsj (num)
+  "Get the jait bits of 'num'"
+  (bits num 15 0))
+
+(defun bitsb (num)
+  "Get the byte bits of 'num'"
+  (bits num 7 0))
+
+(defun jlsb (num)
+  "Jait least significant bit: Get the least significant byte of a jait"
+  (assert (typep num '(unsigned-byte 16)) () "jlsb: Unrecognised value ~a" num)
+  (logand num #xFF ))
+
+(defun jmsb (num)
+  "Jait most significant bit: Get the most significant byte of a jait"
+  (assert (typep num '(unsigned-byte 16)) () "jmsb: Unrecognised value ~a" num)
+  (logand (ash num -8) #xFF ))
