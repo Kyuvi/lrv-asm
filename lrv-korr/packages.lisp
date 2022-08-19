@@ -15,7 +15,7 @@
 
 ;; env-lrv.cl
             #:code-vector #:symbol-table
-            #:*lazy-marker* #:promise #:*memoize-promises*
+            #:*lazy-marker* #:promise #:promise-p #:*memoize-promises*
             #:force #:set-promise-value #:parse-binding #:forcing #:delay
             #:pure-delay
             #:resolve-tree
@@ -24,7 +24,7 @@
             #:join-masks
 
             ;; (defgeneric (setf env-address) (address env)
-            #:env-emit #:env-address #:env-code-vector
+            #:env-emit #:env-address #:env-code-vector #:env-symbol-table
             #:env-find-label #:env-set-label
             #:env-emit-ins
             #:link #:resolve-vector
@@ -33,7 +33,8 @@
             #:basic-env #:local-env
             #:*env* #:*origin* #:*max-address*
             #:emit #:emit-byte #:emit-jait #:emit-vait #:emit-zait
-            #:advance-to #:align #:label #:set-label #:label-difference
+            #:advance-to #:align
+            #:label #:set-label #:label-difference #:label-inc
             ;; #:with-label #:usoro
 
 ;; fmt-lrv.cl
@@ -47,10 +48,19 @@
 (defpackage "RVASM-UTILS"
   (:documentation "Procedures that expand on the basic rvasm package")
   (:nicknames :rvutl)
-  (:use :cl :rvreg :rvasm)
+  (:use :cl :clrv :rvreg :rvasm)
+  ;; (:import-from :clrv symbol-append)
+  ;; (:shadowing-import-from :clrv symbol-append char-code-list)
   (:export
-          #:weak-label #:named-emit #:str-rv #:with-label #:usoro
+          #:set-addressed-label #:weak-label
+          #:set-rvdoc #:rvdoc
+          #:var-rv #:multiple-var-rv #:svec-rv #:str-rv #:ascis #:asciz
+          #:rv-srec #:make-rv-srec #:rv-srec-p #:rv-srec-vars #:def-srec-rv
+          #:srec-rv #:emit-srec-rv
+          #:with-label #:usoro
           #:lnot-imm #:lnotb #:lnotj #:lnotv #:lnotz
+          #:bitsv #:bitsj #:bitsb
+          #:jlsb #:jmsb
    ))
 
 
