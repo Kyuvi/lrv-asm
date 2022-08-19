@@ -8,6 +8,8 @@
       (align 4)))
 
 
+        ;;;; labels ;;;;
+
 (defun set-addressed-label (name address &optional (env *env*))
   "(set-addressed-label name address [env])
    Set label 'name' to address 'address'.
@@ -31,8 +33,14 @@
     (+ ofst (cl::or (env-find-label env name)
                       (progn (warn "using label ~a instead of ~a" backup name)
                              (label backup))))
+    ;; (+ ofst (if (env-find-label env name)
+    ;;             (env-find-label env name)
+    ;;             (progn (warn "using label ~a instead of ~a" backup name)
+    ;;                    (label backup))))
 )
   )
+
+        ;;;; Data types ;;;;
 
 (defun var-rv (name val &optional (type :vait))
   (set-label name)
@@ -255,6 +263,7 @@
 (defun lnot-imm (x imm)
   "Get the 'imm' bits of the logical-not of a number 'x'"
   (bits (lognot x) (- imm 1) 0))
+  ;; (bits (tcv (lognot x)) (- imm 1) 0))
 
 (defun lnotb (x)
   "logical not byte
@@ -270,6 +279,7 @@
   "logical not vyte
    The lSB vyte value of the logical-not of 'x'"
   (lnot-imm x 32))
+  ;; (tcv (lognot x)))
 
 (defun lnotz (x)
   "logical not zyte
