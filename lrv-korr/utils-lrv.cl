@@ -40,6 +40,14 @@
 )
   )
 
+(defun set-rvdoc (sym rv-doc-string)
+  "Add 'rv-doc-string' to :rvdoc entry in plist of 'sym'"
+  (setf (get sym :rvdoc) rv-doc-sting))
+
+(defun rvdoc (sym)
+  "Read :rvdoc entry from plist of 'sym' if it exists"
+  (get sym :rvdoc "rvdoc: RISC-V documentation not found"))
+
         ;;;; Data types ;;;;
 
 (defun var-rv (name val &optional (type :vait))
